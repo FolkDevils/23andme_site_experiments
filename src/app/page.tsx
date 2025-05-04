@@ -25,12 +25,12 @@ const POSE_CONNECTIONS:[string,string][] = [
 
 /* Default palette stops */
 const DEFAULT_PALETTE_STOPS = [
-  [255, 150, 0],     // Magenta
-  [133, 0, 0],      // Orange
-  [0, 0, 0],        // Deep blue
-  [0, 0, 0],      // Indigo / Purple
-  [0, 0, 0],        // Deep blue
-  [0, 0, 0],      // Indigo / Purple
+  [10, 0, 46],     // Purple
+  [133, 0, 0],     // Red
+  [0, 0, 0],       // Black
+  [0, 0, 0],       // Black
+  [0, 0, 0],       // Black
+  [0, 0, 0]        // Black
 ];
 
 /* Preset settings */
@@ -39,33 +39,12 @@ const PRESETS = [
     name: "Default",
     settings: {
       skeleton: {
-        dotColor: "#000000",
-        dotSize: 2,
-        lineColor: "#0000",
-        lineWidth: 1.5
-      },
-      boundingBox: {
-        enabled: true,
-        color: "#ff0000",
-        lineWidth: 2,
-        showLabel: true,
-        labelBgColor: "rgba(0, 0, 0, 0.7)",
-        labelTextColor: "#ffffff",
-        labelFontSize: 10
-      },
-      thermal: {
-        paletteStops: DEFAULT_PALETTE_STOPS
-      }
-    }
-  },
-  {
-    name: "Custom Preset 1",
-    settings: {
-      skeleton: {
-        dotColor: "#000000",
-        dotSize: 2,
-        lineColor: "#0000",
-        lineWidth: 1.5
+        dotColor: "#fa0000",
+        dotSize: 1,
+        lineColor: "#ff0000",
+        lineWidth: 1,
+        showDots: false,
+        showLines: false
       },
       boundingBox: {
         enabled: true,
@@ -80,6 +59,38 @@ const PRESETS = [
         paletteStops: [
           [10, 0, 46],
           [133, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]
+        ]
+      }
+    }
+  },
+  {
+    name: "Custom Preset 1",
+    settings: {
+      skeleton: {
+        dotColor: "#858585",
+        dotSize: 1,
+        lineColor: "#474747",
+        lineWidth: 1,
+        showDots: true,
+        showLines: true
+      },
+      boundingBox: {
+        enabled: true,
+        color: "#3d3d3d",
+        lineWidth: 1,
+        showLabel: true,
+        labelBgColor: "rgba(0, 0, 0, 0.7)",
+        labelTextColor: "#c9c9c9",
+        labelFontSize: 10
+      },
+      thermal: {
+        paletteStops: [
+          [40, 41, 41],
+          [18, 6, 81],
           [0, 0, 0],
           [0, 0, 0],
           [0, 0, 0],
@@ -112,7 +123,7 @@ const CogIcon = () => (
   </svg>
 );
 
-// Initialize palette with default stops
+// Initialize palette with default stops from the default preset
 buildPalette(DEFAULT_PALETTE_STOPS);
 
 /* ----------------------------------------------------------- */
@@ -126,6 +137,8 @@ interface Settings {
     dotSize: number;
     lineColor: string;
     lineWidth: number;
+    showDots: boolean;
+    showLines: boolean;
   };
   boundingBox: {
     enabled: boolean;
@@ -144,24 +157,73 @@ interface Settings {
 // Default settings
 const DEFAULT_SETTINGS: Settings = {
   skeleton: {
-    dotColor: '#000000',
-    dotSize: 2,
-    lineColor: '#0000',
-    lineWidth: 1.5
+    dotColor: '#fa0000',
+    dotSize: 1,
+    lineColor: '#ff0000',
+    lineWidth: 1,
+    showDots: false,
+    showLines: false
   },
   boundingBox: {
     enabled: true,
     color: '#ff0000',
-    lineWidth: 2,
+    lineWidth: 1,
     showLabel: true,
     labelBgColor: 'rgba(0, 0, 0, 0.7)',
-    labelTextColor: '#ffffff',
+    labelTextColor: '#e00000',
     labelFontSize: 10
   },
   thermal: {
-    paletteStops: DEFAULT_PALETTE_STOPS
+    paletteStops: [
+      [10, 0, 46],
+      [133, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0]
+    ]
   }
 };
+
+// Add this CSS to the head element for styling the sliders
+const sliderStyles = `
+  /* Custom slider styling */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.2);
+    outline: none;
+    margin: 8px 0;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 8px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 0;
+    cursor: pointer;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 8px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 0;
+    cursor: pointer;
+    border: none;
+  }
+  
+  input[type="range"]::-ms-thumb {
+    width: 8px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 0;
+    cursor: pointer;
+  }
+`;
 
 export default function Home(){
   const videoRef         = useRef<HTMLVideoElement>(null);
@@ -205,6 +267,10 @@ export default function Home(){
   // Add a new state to track the selected preset
   const [activePreset, setActivePreset] = useState<number>(0); // Default preset is selected by default
   
+  // Add the new state variables for the UI
+  const [showDots, setShowDots] = useState(DEFAULT_SETTINGS.skeleton.showDots);
+  const [showLines, setShowLines] = useState(DEFAULT_SETTINGS.skeleton.showLines);
+  
   // Apply all settings changes
   const applySettings = useCallback(() => {
     const newSettings: Settings = {
@@ -212,7 +278,9 @@ export default function Home(){
         dotColor,
         dotSize,
         lineColor,
-        lineWidth
+        lineWidth,
+        showDots,
+        showLines
       },
       boundingBox: {
         enabled: boxEnabled,
@@ -239,7 +307,7 @@ export default function Home(){
       debouncerRef.current = null;
     }
   }, [
-    dotColor, dotSize, lineColor, lineWidth,
+    dotColor, dotSize, lineColor, lineWidth, showDots, showLines,
     boxEnabled, boxColor, boxLineWidth, boxShowLabel,
     boxLabelBgColor, boxLabelTextColor, boxLabelFontSize,
     paletteStops
@@ -369,10 +437,12 @@ export default function Home(){
 
     const drawKey = (k:Keypoint,c:string,r:number)=>{
       if((k.score??0)<0.3) return;
+      if (!settingsRef.current.skeleton.showDots) return;
       oCtx.fillStyle=c; oCtx.beginPath(); oCtx.arc(k.x,k.y,r,0,Math.PI*2); oCtx.fill();
     };
     const drawSeg = (a:Keypoint,b:Keypoint,c:string,w:number)=>{
       if((a.score??0)<0.3||(b.score??0)<0.3) return;
+      if (!settingsRef.current.skeleton.showLines) return;
       oCtx.strokeStyle=c; oCtx.lineWidth=w;
       oCtx.beginPath(); oCtx.moveTo(a.x,a.y); oCtx.lineTo(b.x,b.y); oCtx.stroke();
     };
@@ -528,13 +598,19 @@ export default function Home(){
     // Apply the thermal palette change immediately
     buildPalette(newStops);
     
-    // Update settings
-    settingsRef.current = {
+    // Update both the ref and the state
+    const newSettings = {
       ...settingsRef.current,
       thermal: {
         paletteStops: newStops
       }
     };
+    
+    // Update settings ref for immediate use
+    settingsRef.current = newSettings;
+    
+    // Update settings state for export
+    setSettings(newSettings);
   };
 
   // Convert RGB array to hex color
@@ -544,7 +620,10 @@ export default function Home(){
 
   /* ---------------- UI --------------------------------------- */
   return(
-    <main className="relative w-full min-h-screen bg-[#111111] p-0 m-0 overflow-hidden">
+    <main className="relative w-full min-h-screen bg-black p-0 m-0 overflow-hidden">
+      {/* Add style tag for custom slider styling */}
+      <style jsx global>{sliderStyles}</style>
+      
       {/* Main content - full width and top-aligned */}
       <div className="relative w-full h-auto">
         {/* Video and output */}
@@ -565,8 +644,7 @@ export default function Home(){
         
         {/* Loading indicator */}
         {status!=='Ready' && (
-          <div className="absolute inset-0 flex items-center justify-center
-                          bg-[#111111]/70 text-white font-mono text-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#111111]/70 text-white font-mono text-sm">
             {status}
           </div>
         )}
@@ -662,10 +740,26 @@ export default function Home(){
                 <div className="space-y-3">
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-white/70 text-xs">Keypoints</label>
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        checked={showDots}
+                        onChange={() => setShowDots(!showDots)}
+                        className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70 mr-2"
+                        id="dotsToggle"
+                      />
+                      <label htmlFor="dotsToggle" className="text-xs text-white/70">
+                        {showDots ? "Visible" : "Hidden"}
+                      </label>
+                    </div>
                   </div>
                   
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-7 h-7 rounded flex-shrink-0" style={{ backgroundColor: dotColor }}></div>
+                    <label 
+                      htmlFor="dotColorPicker"
+                      className="w-7 h-7 rounded-none flex-shrink-0 cursor-pointer"
+                      style={{ backgroundColor: dotColor }}
+                    ></label>
                     <input
                       type="color"
                       value={dotColor}
@@ -673,13 +767,6 @@ export default function Home(){
                       className="sr-only"
                       id="dotColorPicker"
                     />
-                    <label 
-                      htmlFor="dotColorPicker"
-                      className="text-xs text-white/70 cursor-pointer hover:text-white"
-                    >
-                      Color
-                    </label>
-                    
                     <div className="flex-1 ml-2">
                       <label className="text-xs text-white/70 mb-1 block">Size: {dotSize}</label>
                       <input
@@ -689,7 +776,6 @@ export default function Home(){
                         step="0.5"
                         value={dotSize}
                         onChange={(e) => setDotSize(parseFloat(e.target.value))}
-                        className="w-full h-1 bg-[#111111]/70 rounded-none appearance-none cursor-pointer"
                       />
                     </div>
                   </div>
@@ -698,10 +784,26 @@ export default function Home(){
                 <div className="space-y-3">
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-white/70 text-xs">Connections</label>
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        checked={showLines}
+                        onChange={() => setShowLines(!showLines)}
+                        className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70 mr-2"
+                        id="linesToggle"
+                      />
+                      <label htmlFor="linesToggle" className="text-xs text-white/70">
+                        {showLines ? "Visible" : "Hidden"}
+                      </label>
+                    </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded flex-shrink-0" style={{ backgroundColor: lineColor }}></div>
+                    <label 
+                      htmlFor="lineColorPicker"
+                      className="w-7 h-7 rounded-none flex-shrink-0 cursor-pointer"
+                      style={{ backgroundColor: lineColor }}
+                    ></label>
                     <input
                       type="color"
                       value={lineColor}
@@ -709,13 +811,6 @@ export default function Home(){
                       className="sr-only"
                       id="lineColorPicker"
                     />
-                    <label 
-                      htmlFor="lineColorPicker"
-                      className="text-xs text-white/70 cursor-pointer hover:text-white"
-                    >
-                      Color
-                    </label>
-                    
                     <div className="flex-1 ml-2">
                       <label className="text-xs text-white/70 mb-1 block">Width: {lineWidth}</label>
                       <input
@@ -725,7 +820,6 @@ export default function Home(){
                         step="0.5"
                         value={lineWidth}
                         onChange={(e) => setLineWidth(parseFloat(e.target.value))}
-                        className="w-full h-1 bg-[#111111]/70 rounded-none appearance-none cursor-pointer"
                       />
                     </div>
                   </div>
@@ -744,7 +838,7 @@ export default function Home(){
             {activeTab === 'box' && (
               <div className="space-y-3 px-1">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded flex-shrink-0 bg-[#111111]/50 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-none flex-shrink-0 bg-[#111111]/50 flex items-center justify-center">
                     <input 
                       type="checkbox" 
                       checked={boxEnabled}
@@ -758,13 +852,18 @@ export default function Home(){
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded flex-shrink-0" style={{ backgroundColor: boxColor }}></div>
+                  <label 
+                    htmlFor="boxColorPicker"
+                    className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
+                    style={{ backgroundColor: boxColor }}
+                  ></label>
                   <span className="text-xs text-white/70 w-24">Box Color</span>
                   <input
                     type="color"
+                    id="boxColorPicker"
                     value={boxColor}
                     onChange={(e) => setBoxColor(e.target.value)}
-                    className="flex-1 h-6 rounded-none bg-transparent border border-white/10 cursor-pointer"
+                    className="sr-only"
                   />
                 </div>
                 
@@ -780,7 +879,7 @@ export default function Home(){
                     step="0.5"
                     value={boxLineWidth}
                     onChange={(e) => setBoxLineWidth(parseFloat(e.target.value))}
-                    className="flex-1 h-1 bg-[#111111]/70 rounded-none appearance-none cursor-pointer"
+                    className="flex-1"
                   />
                 </div>
                 
@@ -801,10 +900,15 @@ export default function Home(){
                 {boxShowLabel && (
                   <>
                     <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded flex-shrink-0" style={{ backgroundColor: boxLabelBgColor }}></div>
+                      <label 
+                        htmlFor="labelBgColorPicker"
+                        className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
+                        style={{ backgroundColor: boxLabelBgColor }}
+                      ></label>
                       <span className="text-xs text-white/70 w-24">Label Background</span>
                       <input
                         type="color"
+                        id="labelBgColorPicker"
                         value={boxLabelBgColor.startsWith('rgba') ? '#000000' : boxLabelBgColor}
                         onChange={(e) => {
                           const hex = e.target.value;
@@ -813,18 +917,23 @@ export default function Home(){
                           const b = parseInt(hex.slice(5, 7), 16);
                           setBoxLabelBgColor(`rgba(${r}, ${g}, ${b}, 0.7)`);
                         }}
-                        className="flex-1 h-6 rounded-none bg-transparent border border-white/10 cursor-pointer"
+                        className="sr-only"
                       />
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded flex-shrink-0" style={{ backgroundColor: boxLabelTextColor }}></div>
+                      <label 
+                        htmlFor="labelTextColorPicker"
+                        className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
+                        style={{ backgroundColor: boxLabelTextColor }}
+                      ></label>
                       <span className="text-xs text-white/70 w-24">Label Text</span>
                       <input
                         type="color"
+                        id="labelTextColorPicker"
                         value={boxLabelTextColor}
                         onChange={(e) => setBoxLabelTextColor(e.target.value)}
-                        className="flex-1 h-6 rounded-none bg-transparent border border-white/10 cursor-pointer"
+                        className="sr-only"
                       />
                     </div>
                     
@@ -840,7 +949,7 @@ export default function Home(){
                         step="1"
                         value={boxLabelFontSize}
                         onChange={(e) => setBoxLabelFontSize(parseInt(e.target.value))}
-                        className="flex-1 h-1 bg-[#111111]/70 rounded-none appearance-none cursor-pointer"
+                        className="flex-1"
                       />
                     </div>
                   </>
@@ -860,13 +969,18 @@ export default function Home(){
               <div className="space-y-3 px-1">
                 {paletteStops.map((stop, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded flex-shrink-0" style={{ backgroundColor: rgbToHex(stop) }}></div>
                     <span className="text-xs text-white/70 w-6">#{index+1}</span>
+                    <label 
+                      htmlFor={`colorStop${index}`}
+                      className="h-6 rounded-none flex-1 cursor-pointer"
+                      style={{ backgroundColor: rgbToHex(stop) }}
+                    ></label>
                     <input
                       type="color"
+                      id={`colorStop${index}`}
                       value={rgbToHex(stop)}
                       onChange={(e) => updatePaletteStop(index, e.target.value)}
-                      className="flex-1 h-6 rounded-md bg-transparent border border-white/10 cursor-pointer"
+                      className="sr-only"
                     />
                   </div>
                 ))}
@@ -908,6 +1022,8 @@ export default function Home(){
                               setDotSize(preset.settings.skeleton.dotSize);
                               setLineColor(preset.settings.skeleton.lineColor);
                               setLineWidth(preset.settings.skeleton.lineWidth);
+                              setShowDots(preset.settings.skeleton.showDots);
+                              setShowLines(preset.settings.skeleton.showLines);
                               
                               setBoxEnabled(preset.settings.boundingBox.enabled);
                               setBoxColor(preset.settings.boundingBox.color);
@@ -927,7 +1043,9 @@ export default function Home(){
                                   dotColor: preset.settings.skeleton.dotColor,
                                   dotSize: preset.settings.skeleton.dotSize,
                                   lineColor: preset.settings.skeleton.lineColor,
-                                  lineWidth: preset.settings.skeleton.lineWidth
+                                  lineWidth: preset.settings.skeleton.lineWidth,
+                                  showDots: preset.settings.skeleton.showDots,
+                                  showLines: preset.settings.skeleton.showLines
                                 },
                                 boundingBox: {
                                   enabled: preset.settings.boundingBox.enabled,
