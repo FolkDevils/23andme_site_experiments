@@ -988,7 +988,7 @@ export default function Home(){
                 <div className="text-xs text-gray-400 mt-2">
                   <em>Thermal palette changes apply in real-time</em>
                 </div>
-              </div>
+        </div>
             )}
             
             {/* Presets Tab */}
@@ -1108,6 +1108,16 @@ export default function Home(){
             )}
           </div>
         )}
+    </div>
+    
+    {/* Navigation Links */}
+    <div className="absolute bottom-4 left-4 z-20 flex gap-4">
+      <a 
+        href="/terrain" 
+        className="bg-[#111111]/40 hover:bg-[#111111]/60 text-white p-2.5 rounded-none transition-colors shadow-lg backdrop-blur-sm"
+      >
+        3D Terrain Map
+      </a>
     </div>
     </main>
   );
