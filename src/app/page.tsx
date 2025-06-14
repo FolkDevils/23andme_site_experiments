@@ -1,1124 +1,498 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import * as tf from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-webgl';
-import * as poseDetection from '@tensorflow-models/pose-detection';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 
-/* ----------------------------------------------------------- */
-/* 1.  Static data                                             */
-/* ----------------------------------------------------------- */
+export default function Home() {
+  const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  
+  // Video array and current video state
+  const videos = ['/hero.mp4', '/hero_1.mp4'];
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  
+  // Carousel state
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-interface Keypoint { x: number; y: number; z?: number; score?: number; name?: string; }
-
-const POSE_CONNECTIONS:[string,string][] = [
-  ['nose','left_eye'],['nose','right_eye'],
-  ['left_eye','left_ear'],['right_eye','right_ear'],
-  ['left_shoulder','right_shoulder'],
-  ['left_shoulder','left_elbow'],['right_shoulder','right_elbow'],
-  ['left_elbow','left_wrist'],['right_elbow','right_wrist'],
-  ['left_shoulder','left_hip'],['right_shoulder','right_hip'],
-  ['left_hip','right_hip'],
-  ['left_hip','left_knee'],['right_hip','right_knee'],
-  ['left_knee','left_ankle'],['right_knee','right_ankle'],
-];
-
-/* Default palette stops */
-const DEFAULT_PALETTE_STOPS = [
-  [10, 0, 46],     // Purple
-  [133, 0, 0],     // Red
-  [0, 0, 0],       // Black
-  [0, 0, 0],       // Black
-  [0, 0, 0],       // Black
-  [0, 0, 0]        // Black
-];
-
-/* Preset settings */
-const PRESETS = [
-  {
-    name: "Default",
-    settings: {
-      skeleton: {
-        dotColor: "#fa0000",
-        dotSize: 1,
-        lineColor: "#ff0000",
-        lineWidth: 1,
-        showDots: false,
-        showLines: false
-      },
-      boundingBox: {
-        enabled: true,
-        color: "#ff0000",
-        lineWidth: 1,
-        showLabel: true,
-        labelBgColor: "rgba(0, 0, 0, 0.7)",
-        labelTextColor: "#e00000",
-        labelFontSize: 10
-      },
-      thermal: {
-        paletteStops: [
-          [10, 0, 46],
-          [133, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0]
-        ]
+  const scrambleText = (element: HTMLElement, originalText: string, duration: number = 0.6) => {
+    const chars = "!<>-_\\/[]{}—=+*^?#________";
+    let iterations = 0;
+    
+    const interval = setInterval(() => {
+      element.textContent = originalText
+        .split("")
+        .map((letter, index) => {
+          if (index < iterations) {
+            return originalText[index];
+          }
+          return chars[Math.floor(Math.random() * chars.length)];
+        })
+        .join("");
+      
+      if (iterations >= originalText.length) {
+        clearInterval(interval);
       }
-    }
-  },
-  {
-    name: "Custom Preset 1",
-    settings: {
-      skeleton: {
-        dotColor: "#858585",
-        dotSize: 1,
-        lineColor: "#474747",
-        lineWidth: 1,
-        showDots: true,
-        showLines: true
-      },
-      boundingBox: {
-        enabled: true,
-        color: "#3d3d3d",
-        lineWidth: 1,
-        showLabel: true,
-        labelBgColor: "rgba(0, 0, 0, 0.7)",
-        labelTextColor: "#c9c9c9",
-        labelFontSize: 10
-      },
-      thermal: {
-        paletteStops: [
-          [40, 41, 41],
-          [18, 6, 81],
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0]
-        ]
-      }
-    }
-  }
-];
-
-/* NASA / Iron-bow palette — 256 RGB triplets */
-const THERMAL_PALETTE = new Uint8Array(256 * 3);
-
-function buildPalette(stops: number[][]) {
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255, seg = t * (stops.length - 1), k = Math.floor(seg), f = seg - k;
-    const [r1, g1, b1] = stops[k];
-    const [r2, g2, b2] = stops[k + 1] ?? stops[k];
-    THERMAL_PALETTE[i * 3]     = Math.round(r1 + f * (r2 - r1));
-    THERMAL_PALETTE[i * 3 + 1] = Math.round(g1 + f * (g2 - g1));
-    THERMAL_PALETTE[i * 3 + 2] = Math.round(b1 + f * (b2 - b1));
-  }
-}
-
-// Cog SVG icon for settings button
-const CogIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-  </svg>
-);
-
-// Initialize palette with default stops from the default preset
-buildPalette(DEFAULT_PALETTE_STOPS);
-
-/* ----------------------------------------------------------- */
-/* 2.  React component                                         */
-/* ----------------------------------------------------------- */
-
-// Interface for all settings
-interface Settings {
-  skeleton: {
-    dotColor: string;
-    dotSize: number;
-    lineColor: string;
-    lineWidth: number;
-    showDots: boolean;
-    showLines: boolean;
+      
+      iterations += 1 / 3;
+    }, 15);
   };
-  boundingBox: {
-    enabled: boolean;
-    color: string;
-    lineWidth: number;
-    showLabel: boolean;
-    labelBgColor: string;
-    labelTextColor: string;
-    labelFontSize: number;
-  };
-  thermal: {
-    paletteStops: number[][];
-  };
-}
 
-// Default settings
-const DEFAULT_SETTINGS: Settings = {
-  skeleton: {
-    dotColor: '#fa0000',
-    dotSize: 1,
-    lineColor: '#ff0000',
-    lineWidth: 1,
-    showDots: false,
-    showLines: false
-  },
-  boundingBox: {
-    enabled: true,
-    color: '#ff0000',
-    lineWidth: 1,
-    showLabel: true,
-    labelBgColor: 'rgba(0, 0, 0, 0.7)',
-    labelTextColor: '#e00000',
-    labelFontSize: 10
-  },
-  thermal: {
-    paletteStops: [
-      [10, 0, 46],
-      [133, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0]
-    ]
-  }
-};
-
-// Add this CSS to the head element for styling the sliders
-const sliderStyles = `
-  /* Custom slider styling */
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 2px;
-    background: rgba(255,255,255,0.2);
-    outline: none;
-    margin: 8px 0;
-  }
-  
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 8px;
-    height: 12px;
-    background: #ffffff;
-    border-radius: 0;
-    cursor: pointer;
-  }
-  
-  input[type="range"]::-moz-range-thumb {
-    width: 8px;
-    height: 12px;
-    background: #ffffff;
-    border-radius: 0;
-    cursor: pointer;
-    border: none;
-  }
-  
-  input[type="range"]::-ms-thumb {
-    width: 8px;
-    height: 12px;
-    background: #ffffff;
-    border-radius: 0;
-    cursor: pointer;
-  }
-`;
-
-export default function Home(){
-  const videoRef         = useRef<HTMLVideoElement>(null);
-  const outputCanvasRef  = useRef<HTMLCanvasElement>(null);
-  const processCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [detector, setDetector] = useState<poseDetection.PoseDetector|null>(null);
-  const [status, setStatus] = useState('Loading TensorFlow …');
-  const reqRef = useRef<number | null>(null);
-  const [positionData, setPositionData] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  
-  // Full settings object
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const settingsRef = useRef<Settings>(DEFAULT_SETTINGS);
-  
-  // Individual settings for UI controls
-  const [paletteStops, setPaletteStops] = useState(DEFAULT_SETTINGS.thermal.paletteStops);
-  const [dotColor, setDotColor] = useState(DEFAULT_SETTINGS.skeleton.dotColor);
-  const [dotSize, setDotSize] = useState(DEFAULT_SETTINGS.skeleton.dotSize);
-  const [lineColor, setLineColor] = useState(DEFAULT_SETTINGS.skeleton.lineColor);
-  const [lineWidth, setLineWidth] = useState(DEFAULT_SETTINGS.skeleton.lineWidth);
-  
-  // Bounding box settings for UI controls
-  const [boxEnabled, setBoxEnabled] = useState(DEFAULT_SETTINGS.boundingBox.enabled);
-  const [boxColor, setBoxColor] = useState(DEFAULT_SETTINGS.boundingBox.color);
-  const [boxLineWidth, setBoxLineWidth] = useState(DEFAULT_SETTINGS.boundingBox.lineWidth);
-  const [boxShowLabel, setBoxShowLabel] = useState(DEFAULT_SETTINGS.boundingBox.showLabel);
-  const [boxLabelBgColor, setBoxLabelBgColor] = useState(DEFAULT_SETTINGS.boundingBox.labelBgColor);
-  const [boxLabelTextColor, setBoxLabelTextColor] = useState(DEFAULT_SETTINGS.boundingBox.labelTextColor);
-  const [boxLabelFontSize, setBoxLabelFontSize] = useState(DEFAULT_SETTINGS.boundingBox.labelFontSize);
-  
-  const [showControls, setShowControls] = useState(false);
-  const [activeTab, setActiveTab] = useState('thermal'); // 'thermal', 'skeleton', 'box', 'presets', or 'position'
-  
-  // For settings export/import
-  const [settingsJson, setSettingsJson] = useState('');
-  
-  // Throttled style update functions
-  const debouncerRef = useRef<number | null>(null);
-  
-  // Add a new state to track the selected preset
-  const [activePreset, setActivePreset] = useState<number>(0); // Default preset is selected by default
-  
-  // Add the new state variables for the UI
-  const [showDots, setShowDots] = useState(DEFAULT_SETTINGS.skeleton.showDots);
-  const [showLines, setShowLines] = useState(DEFAULT_SETTINGS.skeleton.showLines);
-  
-  // Apply all settings changes
-  const applySettings = useCallback(() => {
-    const newSettings: Settings = {
-      skeleton: {
-        dotColor,
-        dotSize,
-        lineColor,
-        lineWidth,
-        showDots,
-        showLines
-      },
-      boundingBox: {
-        enabled: boxEnabled,
-        color: boxColor,
-        lineWidth: boxLineWidth,
-        showLabel: boxShowLabel,
-        labelBgColor: boxLabelBgColor,
-        labelTextColor: boxLabelTextColor,
-        labelFontSize: boxLabelFontSize
-      },
-      thermal: {
-        paletteStops
-      }
-    };
-    
-    setSettings(newSettings);
-    settingsRef.current = newSettings;
-    
-    // Rebuild thermal palette
-    buildPalette(paletteStops);
-    
-    if (debouncerRef.current) {
-      clearTimeout(debouncerRef.current);
-      debouncerRef.current = null;
+  const handleMouseEnter = (index: number) => {
+    const element = navRefs.current[index];
+    if (element) {
+      const originalText = element.getAttribute('data-text') || element.textContent || '';
+      scrambleText(element, originalText);
     }
-  }, [
-    dotColor, dotSize, lineColor, lineWidth, showDots, showLines,
-    boxEnabled, boxColor, boxLineWidth, boxShowLabel,
-    boxLabelBgColor, boxLabelTextColor, boxLabelFontSize,
-    paletteStops
-  ]);
-  
-  // Export settings to JSON
-  const exportSettings = useCallback(() => {
-    const settingsString = JSON.stringify(settings, null, 2);
-    setSettingsJson(settingsString);
-    
-    // Optionally copy to clipboard
-    navigator.clipboard.writeText(settingsString)
-      .then(() => {
-        console.log('Settings copied to clipboard');
-      })
-      .catch(err => {
-        console.error('Failed to copy settings to clipboard', err);
-      });
-  }, [settings]);
-  
-  // Import settings from JSON
-  const importSettings = useCallback((jsonString: string) => {
-    try {
-      const parsed = JSON.parse(jsonString) as Settings;
-      
-      // Update all state values
-      setDotColor(parsed.skeleton.dotColor);
-      setDotSize(parsed.skeleton.dotSize);
-      setLineColor(parsed.skeleton.lineColor);
-      setLineWidth(parsed.skeleton.lineWidth);
-      
-      setBoxEnabled(parsed.boundingBox.enabled);
-      setBoxColor(parsed.boundingBox.color);
-      setBoxLineWidth(parsed.boundingBox.lineWidth);
-      setBoxShowLabel(parsed.boundingBox.showLabel);
-      setBoxLabelBgColor(parsed.boundingBox.labelBgColor);
-      setBoxLabelTextColor(parsed.boundingBox.labelTextColor);
-      setBoxLabelFontSize(parsed.boundingBox.labelFontSize);
-      
-      setPaletteStops(parsed.thermal.paletteStops);
-      
-      // Apply settings immediately
-      setTimeout(() => {
-        applySettings();
-      }, 100);
-      
-      setSettingsJson('');
-      
-    } catch (error) {
-      console.error('Failed to parse settings JSON', error);
+  };
+
+  const handleMouseLeave = (index: number) => {
+    const element = navRefs.current[index];
+    if (element) {
+      const originalText = element.getAttribute('data-text') || '';
+      element.textContent = originalText;
     }
-  }, [applySettings]);
+  };
 
-  /* ---------------- TensorFlow / MoveNet init ---------------- */
-  useEffect(()=>{
-    (async()=>{
-      try{
-        await tf.setBackend('webgl'); await tf.ready();
-        setStatus('Loading pose model …');
-        const det = await poseDetection.createDetector(
-          poseDetection.SupportedModels.MoveNet,
-          { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
-        );
-        setDetector(det); setStatus('Ready');
-      }catch(e){
-        console.error(e); setStatus('Init Error');
-      }
-    })();
-    return ()=>{ if(reqRef.current) cancelAnimationFrame(reqRef.current); };
-  },[]);
+  const handleButtonMouseEnter = (index: number) => {
+    const element = buttonRefs.current[index];
+    if (element) {
+      const originalText = element.getAttribute('data-text') || element.textContent || '';
+      scrambleText(element, originalText);
+    }
+  };
 
-  /* ---------------- video autoplay helper -------------------- */
-  useEffect(()=>{
-    const v=videoRef.current; if(!v) return;
-    const tryPlay=()=>v.play().catch(()=>{/* ignore */});
-    v.addEventListener('canplay',tryPlay);
-    if(v.readyState>=3) tryPlay();
-    return ()=>v.removeEventListener('canplay',tryPlay);
-  },[]);
+  const handleButtonMouseLeave = (index: number) => {
+    const element = buttonRefs.current[index];
+    if (element) {
+      const originalText = element.getAttribute('data-text') || '';
+      element.textContent = originalText;
+    }
+  };
 
-  /* ---------------- video and canvas size adjustment ---------- */
+  // Keyboard navigation for videos
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'ArrowRight') {
+      setCurrentVideoIndex((prevIndex) => 
+        prevIndex === videos.length - 1 ? 0 : prevIndex + 1
+      );
+    } else if (event.key === 'ArrowLeft') {
+      setCurrentVideoIndex((prevIndex) => 
+        prevIndex === 0 ? videos.length - 1 : prevIndex - 1
+      );
+    }
+  };
+
+  // Add keyboard event listener
   useEffect(() => {
-    const handleResize = () => {
-      const v = videoRef.current;
-      const out = outputCanvasRef.current;
-      const tmp = processCanvasRef.current;
-      
-      if (!v || !out || !tmp) return;
-      
-      // Apply window width to canvas
-      if (v.videoWidth && v.videoHeight) {
-        // Define variables but use them to avoid ESLint warnings
-        const aspectRatio = v.videoWidth / v.videoHeight;
-        const windowWidth = window.innerWidth;
-        // Use variables to avoid ESLint warnings
-        if (aspectRatio && windowWidth) {
-          // Calculation happens but result is not stored to avoid ESLint warnings
-        }
-        
-        // Update canvas dimensions if needed
-        [out, tmp].forEach(canvas => {
-          canvas.style.width = '100%';
-          canvas.style.height = 'auto';
-          canvas.style.maxWidth = 'none';
-        });
-      }
-    };
-    
-    // Call once on mount and add listener
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [videos.length]);
 
-  /* ---------------- main loop -------------------------------- */
-  useEffect(()=>{
-    const v = videoRef.current,
-          out = outputCanvasRef.current,
-          tmp = processCanvasRef.current;
-    if(!v||!out||!tmp||!detector) return;
-
-    const oCtx = out.getContext('2d')!;
-    const tCtx = tmp.getContext('2d',{ willReadFrequently:true })!;
-
-    const drawKey = (k:Keypoint,c:string,r:number)=>{
-      if((k.score??0)<0.3) return;
-      if (!settingsRef.current.skeleton.showDots) return;
-      oCtx.fillStyle=c; oCtx.beginPath(); oCtx.arc(k.x,k.y,r,0,Math.PI*2); oCtx.fill();
-    };
-    const drawSeg = (a:Keypoint,b:Keypoint,c:string,w:number)=>{
-      if((a.score??0)<0.3||(b.score??0)<0.3) return;
-      if (!settingsRef.current.skeleton.showLines) return;
-      oCtx.strokeStyle=c; oCtx.lineWidth=w;
-      oCtx.beginPath(); oCtx.moveTo(a.x,a.y); oCtx.lineTo(b.x,b.y); oCtx.stroke();
-    };
-
-    // Draw bounding box
-    const drawBoundingBox = (keypoints: Keypoint[], oCtx: CanvasRenderingContext2D) => {
-      // Get bounding box settings
-      const {
-        enabled,
-        color,
-        lineWidth,
-        showLabel,
-        labelBgColor,
-        labelTextColor,
-        labelFontSize
-      } = settingsRef.current.boundingBox;
-      
-      // Skip if disabled
-      if (!enabled) return;
-      
-      const validPoints = keypoints.filter(kp => (kp.score ?? 0) > 0.3);
-      if (validPoints.length < 2) return;
-
-      const xValues = validPoints.map(kp => kp.x);
-      const yValues = validPoints.map(kp => kp.y);
-      
-      const minX = Math.min(...xValues);
-      const maxX = Math.max(...xValues);
-      const minY = Math.min(...yValues);
-      const maxY = Math.max(...yValues);
-      
-      // Add padding around the person
-      const paddingX = (maxX - minX) * 0.1;
-      const paddingY = (maxY - minY) * 0.1;
-      
-      const boxX = Math.max(0, minX - paddingX);
-      const boxY = Math.max(0, minY - paddingY);
-      const boxWidth = Math.min(oCtx.canvas.width - boxX, maxX - minX + 2 * paddingX);
-      const boxHeight = Math.min(oCtx.canvas.height - boxY, maxY - minY + 2 * paddingY);
-      
-      // Store position data for display
-      setPositionData({
-        x: Math.round(boxX),
-        y: Math.round(boxY),
-        width: Math.round(boxWidth),
-        height: Math.round(boxHeight)
+  // Carousel navigation
+  const goToSlide = (slideIndex: number) => {
+    if (carouselRef.current) {
+      const slideWidth = carouselRef.current.clientWidth;
+      carouselRef.current.scrollTo({
+        left: slideIndex * slideWidth,
+        behavior: 'smooth'
       });
-      
-      // Draw rectangle
-      oCtx.strokeStyle = color;
-      oCtx.lineWidth = lineWidth;
-      oCtx.beginPath();
-      oCtx.rect(boxX, boxY, boxWidth, boxHeight);
-      oCtx.stroke();
-      
-      // Draw position data label
-      if (showLabel) {
-        const labelPadding = Math.max(4, labelFontSize * 1);
-        const labelHeight = labelFontSize + labelPadding * 2;
-        const labelText = `${Math.round(boxX)},${Math.round(boxY)} - ${Math.round(boxWidth)}×${Math.round(boxHeight)}`;
-        
-        oCtx.font = `${labelFontSize}px monospace`;
-        const textWidth = oCtx.measureText(labelText).width;
-        
-        oCtx.fillStyle = labelBgColor;
-        oCtx.fillRect(boxX, boxY - labelHeight - 2, textWidth + labelPadding * 2, labelHeight);
-        
-        oCtx.fillStyle = labelTextColor;
-        oCtx.fillText(labelText, boxX, boxY - labelPadding - 2);
-      }
-    };
-
-    /* CPU thermal mapping */
-    const toThermal = ()=>{
-      tCtx.drawImage(v,0,0,out.width,out.height);
-      const img=tCtx.getImageData(0,0,out.width,out.height);
-      const d=img.data;
-      for(let i=0;i<d.length;i+=4){
-        const y=(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2])|0;
-        d[i  ]=THERMAL_PALETTE[y*3  ];
-        d[i+1]=THERMAL_PALETTE[y*3+1];
-        d[i+2]=THERMAL_PALETTE[y*3+2];
-      }
-      oCtx.putImageData(img,0,0);
-    };
-
-    const loop=async()=>{
-      if(v.readyState>=2){
-        if(out.width!==v.videoWidth){
-          [out,tmp].forEach(c=>{
-            c.width=v.videoWidth; 
-            c.height=v.videoHeight;
-            
-            // Ensure the canvas stretches to fill window width while maintaining aspect ratio
-            const aspectRatio = v.videoWidth / v.videoHeight;
-            const windowWidth = window.innerWidth;
-            // Use variables to avoid ESLint warnings
-            if (aspectRatio && windowWidth) {
-              // Calculation happens but result is not stored to avoid ESLint warnings
-            }
-            
-            c.style.width = '100%';
-            c.style.height = 'auto';
-            c.style.maxWidth = 'none'; // Override any max-width constraints
-          });
-        }
-        toThermal();
-
-        const poses=await detector.estimatePoses(v);
-        if(poses[0]){
-          const kps=poses[0].keypoints as Keypoint[];
-          
-          // Draw bounding box first (behind skeleton)
-          drawBoundingBox(kps, oCtx);
-          
-          // Draw skeleton connections using current line style from ref
-          const { lineColor, lineWidth, dotColor, dotSize } = settingsRef.current.skeleton;
-          
-          POSE_CONNECTIONS.forEach(([s,e])=>{
-            const a=kps.find(k=>k.name===s), b=kps.find(k=>k.name===e);
-            if(a&&b) drawSeg(a,b,lineColor,lineWidth);
-          });
-          
-          // Draw keypoints using current dot style from ref
-          kps.forEach(k=>drawKey(k,dotColor,dotSize));
-        }
-      }
-      reqRef.current=requestAnimationFrame(loop);
-    };
-    reqRef.current=requestAnimationFrame(loop);
-    
-    return () => {
-      if (reqRef.current) {
-        cancelAnimationFrame(reqRef.current);
-        reqRef.current = null;
-      }
-    };
-  // Remove style dependencies from the effect to prevent re-running the loop
-  // when styles change - instead, we use refs to access current style values
-  },[detector]);
-
-  // Update a specific color stop in the palette
-  const updatePaletteStop = (index: number, color: string) => {
-    // Convert hex color to RGB
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    
-    const newStops = [...paletteStops];
-    newStops[index] = [r, g, b];
-    setPaletteStops(newStops);
-    
-    // Apply the thermal palette change immediately
-    buildPalette(newStops);
-    
-    // Update both the ref and the state
-    const newSettings = {
-      ...settingsRef.current,
-      thermal: {
-        paletteStops: newStops
-      }
-    };
-    
-    // Update settings ref for immediate use
-    settingsRef.current = newSettings;
-    
-    // Update settings state for export
-    setSettings(newSettings);
+      setCurrentSlide(slideIndex);
+    }
   };
 
-  // Convert RGB array to hex color
-  const rgbToHex = (rgb: number[]) => {
-    return '#' + rgb.map(c => c.toString(16).padStart(2, '0')).join('');
+  // Track scroll position for dot indicators
+  const handleCarouselScroll = () => {
+    if (carouselRef.current) {
+      const slideWidth = carouselRef.current.clientWidth;
+      const scrollLeft = carouselRef.current.scrollLeft;
+      const newSlide = Math.round(scrollLeft / slideWidth);
+      setCurrentSlide(newSlide);
+    }
   };
 
-  /* ---------------- UI --------------------------------------- */
-  return(
-    <main className="relative w-full min-h-screen bg-black p-0 m-0 overflow-hidden">
-      {/* Add style tag for custom slider styling */}
-      <style jsx global>{sliderStyles}</style>
-      
-      {/* Main content - full width and top-aligned */}
-      <div className="relative w-full h-auto">
-        {/* Video and output */}
-        <video ref={videoRef} src="/input-video.mp4"
-              playsInline muted loop autoPlay className="hidden"/>
-        <canvas ref={processCanvasRef} className="hidden"/>
-        <canvas
-          ref={outputCanvasRef}
-          className="w-full h-auto"
-          style={{ 
-            display: 'block', 
-            width: '100%', 
-            maxWidth: 'none',
-            height: 'auto',
-            objectFit: 'fill'
-          }}
-        />
-        
-        {/* Loading indicator */}
-        {status!=='Ready' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#111111]/70 text-white font-mono text-sm">
-            {status}
-          </div>
-        )}
-        
-        {/* Toggle controls button - cog icon */}
-        <button 
-          onClick={() => setShowControls(!showControls)}
-          className="absolute top-4 right-4 z-20 bg-[#111111]/40 hover:bg-[#111111]/60 text-white p-2.5 rounded-none transition-colors shadow-lg backdrop-blur-sm"
-          aria-label={showControls ? "Hide Controls" : "Show Controls"}
+
+
+  return (
+    <div className="bg-black text-white min-h-screen">
+      {/* Hero Section */}
+      <div className="relative h-screen overflow-hidden">
+        {/* Background Video */}
+        <video
+          key={currentVideoIndex}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
         >
-          <CogIcon />
-        </button>
+          <source src={videos[currentVideoIndex]} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/50" />
         
-        {/* Controls panel overlay - Minimalist design */}
-        {showControls && (
-          <div className="absolute top-16 right-4 z-10 w-96 max-w-[90vw] bg-[#111111]/80 backdrop-blur-md p-3 rounded-none shadow-xl overflow-hidden max-h-[80vh] transition-all duration-200 ease-in-out border border-white/10">
-            {/* Material design inspired tabs */}
-            <div className="flex border-b border-white/10 mb-4 justify-between">
-              <button 
-                onClick={() => setActiveTab('position')}
-                className={`px-3 py-2 text-xs font-medium relative ${activeTab === 'position' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                Position
-                {activeTab === 'position' && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('skeleton')}
-                className={`px-3 py-2 text-xs font-medium relative ${activeTab === 'skeleton' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                Skeleton
-                {activeTab === 'skeleton' && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('box')}
-                className={`px-3 py-2 text-xs font-medium relative ${activeTab === 'box' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                Box
-                {activeTab === 'box' && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('thermal')}
-                className={`px-3 py-2 text-xs font-medium relative ${activeTab === 'thermal' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                Thermal
-                {activeTab === 'thermal' && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('presets')}
-                className={`px-3 py-2 text-xs font-medium relative ${activeTab === 'presets' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                Presets
-                {activeTab === 'presets' && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />
-                )}
-              </button>
+        <div className="relative z-10 flex flex-col justify-between h-full p-8">
+          {/* Header */}
+          <header className="flex justify-between items-center">
+            {/* Logo */}
+            <div className="text-white">
+              <svg className="h-7 w-auto" viewBox="0 0 169 28" fill="none">
+                <path
+                  d="M21.3103 13.9552L24.1653 10.9215C24.6876 10.3585 24.9293 9.75171 24.9293 8.8844V5.85066C24.9293 5.15645 24.6082 4.42034 24.1653 3.90105L21.4709 0.996672C20.908 0.389924 20.3451 0.129368 19.5405 0.129368H1.1258C0.321194 0.129368 0 0.475561 0 1.34287V26.6532C0 27.5205 0.321194 27.8667 1.1258 27.8667H19.7011C20.5057 27.8667 21.0686 27.6061 21.6315 26.9994L24.4054 24.0094C24.8482 23.532 25.1694 22.7522 25.1694 22.0598V19.2429C25.1694 18.3756 24.9277 17.7688 24.4054 17.2058L21.3103 13.9552ZM3.33845 3.25057H18.9793L21.5926 6.15495L21.6737 8.97186L18.4976 12.4393H3.34014V3.25057H3.33845ZM21.9138 21.7555L19.1804 24.7455H3.33845V15.5568H18.4959L21.9932 19.241L21.9121 21.7555H21.9138Z"
+                  fill="white"
+                />
+                <path
+                  d="M54.0797 3.20712H67.9507L70.4828 6.06777C71.0457 6.71825 71.5275 6.71825 72.0515 6.15523L72.9761 5.20229C73.539 4.63927 73.4984 4.11816 72.9761 3.55514L70.4034 0.825681C69.8811 0.262662 69.3182 0.00210666 68.5136 0.00210666H53.7179C52.9133 0.00210666 52.3504 0.262662 51.7875 0.869411L47.2844 5.7234C46.7215 6.33015 46.4798 6.9369 46.4798 7.8042V20.2416C46.4798 21.1089 46.7215 21.7157 47.2438 22.2787L51.8281 27.1764C52.3504 27.7394 52.9133 28 53.7179 28H68.5136C69.3182 28 69.8811 27.7394 70.4034 27.1764L72.9372 24.4889C73.4596 23.9259 73.4596 23.4047 72.9372 22.8417L72.0938 21.8888C71.5714 21.282 71.088 21.3258 70.5251 21.9762L68.0318 24.7932H54.1202L49.8183 20.1997V7.75865L54.0797 3.20712Z"
+                  fill="white"
+                />
+                <path
+                  d="M102.63 0.867304C102.067 0.260556 101.504 0 100.699 0H85.4202C84.6156 0 84.0527 0.260556 83.5304 0.823575L78.9073 5.85066C78.385 6.41368 78.1432 7.02043 78.1432 7.88773V20.1521C78.1432 21.0194 78.385 21.6261 78.9073 22.1891L83.571 27.1725C84.0933 27.7355 84.6562 27.9961 85.4608 27.9961H100.699C101.504 27.9961 102.067 27.7355 102.589 27.1725L107.253 22.231C107.775 21.668 108.017 21.0613 108.017 20.194V7.88773C108.017 7.02043 107.775 6.41368 107.212 5.80693L102.628 0.865482L102.63 0.867304ZM104.68 20.1521L100.378 24.7892H85.8242L81.4817 20.0646V7.844L85.7836 3.20684H100.299L104.682 7.93146V20.1539L104.68 20.1521Z"
+                  fill="white"
+                />
+                <path
+                  d="M134.627 0.952943C134.104 0.389924 133.542 0.129368 132.737 0.129368H115.247C114.442 0.129368 114.121 0.475561 114.121 1.34287V26.7388C114.121 27.6061 114.483 27.9086 115.287 27.9086H116.253C117.057 27.9086 117.378 27.5187 117.378 26.6514V18.2006H131.692L135.151 21.8849L135.07 26.7826C135.07 27.6061 135.391 27.9523 136.195 27.9523H137.362C138.166 27.9523 138.487 27.6061 138.487 26.7388V21.8849C138.487 21.0176 138.246 20.4108 137.723 19.8478L134.588 16.5098L137.884 13.0424C138.406 12.4793 138.648 11.8726 138.648 11.0053V6.54122C138.648 5.67392 138.406 5.06717 137.884 4.50415L134.627 0.951121V0.952943ZM135.269 11.2239L131.691 15.0375H117.377V3.33803H132.333L135.267 6.50114V11.2258L135.269 11.2239Z"
+                  fill="white"
+                />
+                <path
+                  d="M167.857 23.317L167.014 22.4497C166.451 21.8867 166.008 21.9304 165.445 22.5371L163.476 24.7036H148.036V15.6461L163.275 15.6898C164.039 15.6898 164.36 15.3436 164.36 14.4763V13.4359C164.36 12.5686 164.039 12.2224 163.234 12.2224H148.036V3.29429H163.315L165.325 5.54819C165.888 6.19867 166.37 6.19867 166.933 5.54819L167.656 4.76834C168.219 4.16159 168.219 3.59857 167.697 3.03556L165.728 0.954755C165.205 0.391736 164.642 0.13118 163.838 0.13118H145.945C145.141 0.13118 144.819 0.477373 144.819 1.34468V26.655C144.819 27.5223 145.141 27.8685 145.945 27.8685H163.958C164.762 27.8685 165.325 27.608 165.848 27.0449L167.778 25.0079C168.381 24.4011 168.381 23.8818 167.859 23.317H167.857Z"
+                  fill="white"
+                />
+                <path
+                  d="M41.9799 3.14853H41.2936C40.7206 3.14853 40.4924 3.42549 40.5211 4.04317L40.5786 6.23329L29.7046 18.4794C29.3039 18.9422 29.1315 19.374 29.1315 19.9899V22.1491C29.1315 22.7667 29.3597 23.0127 29.9328 23.0127H30.6191C31.1921 23.0127 31.3915 22.7358 31.3915 22.1181L31.3628 19.897L42.2081 7.68184C42.6087 7.21903 42.7812 6.7872 42.7812 6.17134V4.01219C42.7812 3.39451 42.553 3.14853 41.9799 3.14853Z"
+                  fill="#D6E200"
+                />
+              </svg>
+            </div>
+
+                      {/* Navigation */}
+          <nav className="hidden lg:block">
+            <div className="flex space-x-8 xl:space-x-14 font-kode text-sm  uppercase tracking-wider">
+              {['Who We Are', 'What We Do', 'News & Insights', 'Join Us'].map((item, index) => (
+                <a
+                  key={index}
+                  href="#"
+                  ref={(el) => { navRefs.current[index] = el; }}
+                  data-text={item}
+                  className="hover:text-bcore-green transition-colors cursor-pointer"
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={() => handleMouseLeave(index)}
+                >
+                  {item}
+                </a>
+              ))}
+            </div>
+          </nav>
+
+            {/* Mobile menu button */}
+            <button className="lg:hidden text-white p-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </header>
+
+          {/* Hero Content */}
+          <div className="max-w-5xl py-16 space-y-6">
+            <h1 
+              className="font-jetbrains text-3xl lg:text-5xl font-extralight text-bcore-green uppercase"
+              style={{wordSpacing: '-0.4em'}}
+            >
+              Outthink.
+              Outbuild.
+              Outfight.
+            </h1>
+            <p className="font-jetbrains font-extralight text-sm text-white max-w-3xl leading-relaxed">
+              Bcore delivers rapid mission impact for those charged with protecting the nation—through integrated intelligence, engineering, and tradecraft.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Core Values Section */}
+      <section className="py-16 lg:py-20">
+                <div className="px-8 lg:px-16">
+          {/* Mobile Layout - Horizontal Carousel */}
+          <div className="block lg:hidden">
+            <div 
+              ref={carouselRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide space-x-0"
+              onScroll={handleCarouselScroll}
+            >
+              {[
+                {
+                  title: "Velocity",
+                  description: "Speed isn't a tactic—it's a weapon. Our systems and teams are built to deliver real outcomes at mission tempo.",
+                  image: "/B1.png"
+                },
+                {
+                  title: "Precision",
+                  description: "From code to strategy, we zero in on what matters and eliminate noise. Clarity leads. Accuracy follows.",
+                  image: "/B2.png"
+                },
+                {
+                  title: "Human Edge",
+                  description: "Our operators, analysts, and engineers bring hard-earned wisdom and instinct you can't teach, and can't fake.",
+                  image: "/B3.png"
+                },
+                {
+                  title: "Relentless Grit",
+                  description: "High-consequence missions don't come with second chances. We go beyond expectation—then go again.",
+                  image: "/B4.png"
+                }
+              ].map((value, index) => (
+                <div key={index} className="flex-none w-full snap-start">
+                  {/* 80% Width Image with Auto Height */}
+                  <div className="w-[80%] mb-4">
+                    <Image
+                      src={value.image}
+                      alt={value.title}
+                      width={1080}
+                      height={600}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                  {/* Text */}
+                  <div className="w-full">
+                    <h3 className="font-jetbrains text-lg font-extralight text-bcore-green uppercase mb-3">
+                      {value.title}
+                    </h3>
+                    <p className="font-jetbrains font-extralight text-xs text-white leading-relaxed">
+                      {value.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
             
-            {/* Position Data */}
-            {activeTab === 'position' && (
-              <div className="space-y-3 px-1">
-                <div className="grid grid-cols-2 gap-3 text-white text-xs">
-                  <div className="bg-[#111111]/50 p-2 rounded-none flex justify-between">
-                    <span className="opacity-70">X:</span> 
-                    <span>{positionData.x}</span>
-                  </div>
-                  <div className="bg-[#111111]/50 p-2 rounded-none flex justify-between">
-                    <span className="opacity-70">Y:</span> 
-                    <span>{positionData.y}</span>
-                  </div>
-                  <div className="bg-[#111111]/50 p-2 rounded-none flex justify-between">
-                    <span className="opacity-70">Width:</span> 
-                    <span>{positionData.width}</span>
-                  </div>
-                  <div className="bg-[#111111]/50 p-2 rounded-none flex justify-between">
-                    <span className="opacity-70">Height:</span> 
-                    <span>{positionData.height}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Skeleton Controls */}
-            {activeTab === 'skeleton' && (
-              <div className="space-y-4 px-1">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-white/70 text-xs">Keypoints</label>
-                    <div className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={showDots}
-                        onChange={() => setShowDots(!showDots)}
-                        className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70 mr-2"
-                        id="dotsToggle"
-                      />
-                      <label htmlFor="dotsToggle" className="text-xs text-white/70">
-                        {showDots ? "Visible" : "Hidden"}
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 mb-2">
-                    <label 
-                      htmlFor="dotColorPicker"
-                      className="w-7 h-7 rounded-none flex-shrink-0 cursor-pointer"
-                      style={{ backgroundColor: dotColor }}
-                    ></label>
-                    <input
-                      type="color"
-                      value={dotColor}
-                      onChange={(e) => setDotColor(e.target.value)}
-                      className="sr-only"
-                      id="dotColorPicker"
-                    />
-                    <div className="flex-1 ml-2">
-                      <label className="text-xs text-white/70 mb-1 block">Size: {dotSize}</label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="0.5"
-                        value={dotSize}
-                        onChange={(e) => setDotSize(parseFloat(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-white/70 text-xs">Connections</label>
-                    <div className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={showLines}
-                        onChange={() => setShowLines(!showLines)}
-                        className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70 mr-2"
-                        id="linesToggle"
-                      />
-                      <label htmlFor="linesToggle" className="text-xs text-white/70">
-                        {showLines ? "Visible" : "Hidden"}
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <label 
-                      htmlFor="lineColorPicker"
-                      className="w-7 h-7 rounded-none flex-shrink-0 cursor-pointer"
-                      style={{ backgroundColor: lineColor }}
-                    ></label>
-                    <input
-                      type="color"
-                      value={lineColor}
-                      onChange={(e) => setLineColor(e.target.value)}
-                      className="sr-only"
-                      id="lineColorPicker"
-                    />
-                    <div className="flex-1 ml-2">
-                      <label className="text-xs text-white/70 mb-1 block">Width: {lineWidth}</label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="0.5"
-                        value={lineWidth}
-                        onChange={(e) => setLineWidth(parseFloat(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={applySettings}
-                  className="w-full mt-1 bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-none text-xs font-medium transition-colors"
-                >
-                  Apply Changes
-                </button>
-              </div>
-            )}
-            
-            {/* Bounding Box Controls */}
-            {activeTab === 'box' && (
-              <div className="space-y-3 px-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-none flex-shrink-0 bg-[#111111]/50 flex items-center justify-center">
-                    <input 
-                      type="checkbox" 
-                      checked={boxEnabled}
-                      onChange={() => setBoxEnabled(!boxEnabled)}
-                      className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70"
-                      id="boxToggle"
-                    />
-                  </div>
-                  <span className="text-xs text-white/70 w-24">Enable Box</span>
-                  <div className="flex-1"></div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <label 
-                    htmlFor="boxColorPicker"
-                    className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
-                    style={{ backgroundColor: boxColor }}
-                  ></label>
-                  <span className="text-xs text-white/70 w-24">Box Color</span>
-                  <input
-                    type="color"
-                    id="boxColorPicker"
-                    value={boxColor}
-                    onChange={(e) => setBoxColor(e.target.value)}
-                    className="sr-only"
+            {/* Dot Navigation */}
+            <div className="flex justify-between items-center mt-8">
+              <div className="flex space-x-2">
+                {[0, 1, 2, 3].map((index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={`w-1.5 h-1.5 transition-colors duration-200 ${
+                      currentSlide === index ? 'bg-bcore-green' : 'bg-white/30'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
                   />
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-white/70 text-xs">
-                    <span>{boxLineWidth}</span>
-                  </div>
-                  <span className="text-xs text-white/70 w-24">Line Width</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    step="0.5"
-                    value={boxLineWidth}
-                    onChange={(e) => setBoxLineWidth(parseFloat(e.target.value))}
-                    className="flex-1"
-                  />
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded flex-shrink-0 bg-[#111111]/50 flex items-center justify-center">
-                    <input 
-                      type="checkbox" 
-                      checked={boxShowLabel}
-                      onChange={() => setBoxShowLabel(!boxShowLabel)}
-                      className="w-4 h-4 text-blue-500 border-white/20 bg-[#111111]/70"
-                      id="labelToggle"
-                    />
-                  </div>
-                  <span className="text-xs text-white/70 w-24">Show Label</span>
-                  <div className="flex-1"></div>
-                </div>
-                
-                {boxShowLabel && (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <label 
-                        htmlFor="labelBgColorPicker"
-                        className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
-                        style={{ backgroundColor: boxLabelBgColor }}
-                      ></label>
-                      <span className="text-xs text-white/70 w-24">Label Background</span>
-                      <input
-                        type="color"
-                        id="labelBgColorPicker"
-                        value={boxLabelBgColor.startsWith('rgba') ? '#000000' : boxLabelBgColor}
-                        onChange={(e) => {
-                          const hex = e.target.value;
-                          const r = parseInt(hex.slice(1, 3), 16);
-                          const g = parseInt(hex.slice(3, 5), 16);
-                          const b = parseInt(hex.slice(5, 7), 16);
-                          setBoxLabelBgColor(`rgba(${r}, ${g}, ${b}, 0.7)`);
-                        }}
-                        className="sr-only"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <label 
-                        htmlFor="labelTextColorPicker"
-                        className="w-6 h-6 rounded-none flex-shrink-0 cursor-pointer"
-                        style={{ backgroundColor: boxLabelTextColor }}
-                      ></label>
-                      <span className="text-xs text-white/70 w-24">Label Text</span>
-                      <input
-                        type="color"
-                        id="labelTextColorPicker"
-                        value={boxLabelTextColor}
-                        onChange={(e) => setBoxLabelTextColor(e.target.value)}
-                        className="sr-only"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-white/70 text-xs">
-                        <span>{boxLabelFontSize}</span>
-                      </div>
-                      <span className="text-xs text-white/70 w-24">Font Size</span>
-                      <input
-                        type="range"
-                        min="8"
-                        max="20"
-                        step="1"
-                        value={boxLabelFontSize}
-                        onChange={(e) => setBoxLabelFontSize(parseInt(e.target.value))}
-                        className="flex-1"
-                      />
-                    </div>
-                  </>
-                )}
-                
-                <button
-                  onClick={applySettings}
-                  className="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-none text-xs font-medium transition-colors"
-                >
-                  Apply Changes
-                </button>
-              </div>
-            )}
-            
-            {/* Thermal Palette Controls */}
-            {activeTab === 'thermal' && (
-              <div className="space-y-3 px-1">
-                {paletteStops.map((stop, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-xs text-white/70 w-6">#{index+1}</span>
-                    <label 
-                      htmlFor={`colorStop${index}`}
-                      className="h-6 rounded-none flex-1 cursor-pointer"
-                      style={{ backgroundColor: rgbToHex(stop) }}
-                    ></label>
-                    <input
-                      type="color"
-                      id={`colorStop${index}`}
-                      value={rgbToHex(stop)}
-                      onChange={(e) => updatePaletteStop(index, e.target.value)}
-                      className="sr-only"
-                    />
-                  </div>
                 ))}
-                
-                <div className="text-xs text-gray-400 mt-2">
-                  <em>Thermal palette changes apply in real-time</em>
+              </div>
+              <div className="font-jetbrains text-xs">
+                <span className="text-bcore-green">
+                  {String(currentSlide + 1).padStart(2, '0')}
+                </span>
+                <span className="text-white">/04</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop Layout - Original Grid */}
+          <div className="hidden lg:grid grid-cols-4 gap-16">
+            {[
+              {
+                title: "Velocity",
+                description: "Speed isn't a tactic—it's a weapon. Our systems and teams are built to deliver real outcomes at mission tempo.",
+                image: "/B1.png"
+              },
+              {
+                title: "Precision",
+                description: "From code to strategy, we zero in on what matters and eliminate noise. Clarity leads. Accuracy follows.",
+                image: "/B2.png"
+              },
+              {
+                title: "Human Edge",
+                description: "Our operators, analysts, and engineers bring hard-earned wisdom and instinct you can't teach, and can't fake.",
+                image: "/B3.png"
+              },
+              {
+                title: "Relentless Grit",
+                description: "High-consequence missions don't come with second chances. We go beyond expectation—then go again.",
+                image: "/B4.png"
+              }
+            ].map((value, index) => (
+              <div key={index} className="space-y-8">
+                {/* Value Image */}
+                <div className="w-full h-64 relative">
+                  <Image
+                    src={value.image}
+                    alt={value.title}
+                    fill
+                    className="object-contain object-left-bottom"
+                  />
                 </div>
+                <div>
+                  <h3 className="font-jetbrains text-xl font-extralight text-bcore-green uppercase mb-4">
+                    {value.title}
+                  </h3>
+                  <p className="font-jetbrains font-extralight text-xs text-white leading-relaxed">
+                    {value.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-            )}
-            
-            {/* Presets Tab */}
-            {activeTab === 'presets' && (
-              <div className="space-y-4 px-1">
-                <div className="space-y-3">
-                  <h3 className="text-white/90 text-xs font-medium mb-1">Select Preset</h3>
-                  <div className="space-y-2">
-                    {PRESETS.map((preset, index) => (
-                      <div 
-                        key={index}
-                        className={`w-full bg-[#111111]/50 hover:bg-[#111111]/70 text-white/90 py-2 px-3 rounded-none text-xs font-medium transition-colors flex items-center justify-between border ${activePreset === index ? 'border-blue-500' : 'border-white/10'}`}
-                      >
-                        <label className="flex items-center gap-3 w-full cursor-pointer">
-                          <div className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center flex-shrink-0">
-                            {activePreset === index && (
-                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                            )}
-                          </div>
-                          <input
-                            type="radio"
-                            name="preset"
-                            className="sr-only"
-                            checked={activePreset === index}
-                            onChange={() => {
-                              setActivePreset(index);
-                              
-                              // Apply preset settings
-                              const preset = PRESETS[index];
-                              setDotColor(preset.settings.skeleton.dotColor);
-                              setDotSize(preset.settings.skeleton.dotSize);
-                              setLineColor(preset.settings.skeleton.lineColor);
-                              setLineWidth(preset.settings.skeleton.lineWidth);
-                              setShowDots(preset.settings.skeleton.showDots);
-                              setShowLines(preset.settings.skeleton.showLines);
-                              
-                              setBoxEnabled(preset.settings.boundingBox.enabled);
-                              setBoxColor(preset.settings.boundingBox.color);
-                              setBoxLineWidth(preset.settings.boundingBox.lineWidth);
-                              setBoxShowLabel(preset.settings.boundingBox.showLabel);
-                              setBoxLabelBgColor(preset.settings.boundingBox.labelBgColor);
-                              setBoxLabelTextColor(preset.settings.boundingBox.labelTextColor);
-                              setBoxLabelFontSize(preset.settings.boundingBox.labelFontSize);
-                              
-                              // Update thermal palette immediately
-                              setPaletteStops(preset.settings.thermal.paletteStops);
-                              buildPalette(preset.settings.thermal.paletteStops);
-                              
-                              // Apply all settings immediately using the current values
-                              settingsRef.current = {
-                                skeleton: {
-                                  dotColor: preset.settings.skeleton.dotColor,
-                                  dotSize: preset.settings.skeleton.dotSize,
-                                  lineColor: preset.settings.skeleton.lineColor,
-                                  lineWidth: preset.settings.skeleton.lineWidth,
-                                  showDots: preset.settings.skeleton.showDots,
-                                  showLines: preset.settings.skeleton.showLines
-                                },
-                                boundingBox: {
-                                  enabled: preset.settings.boundingBox.enabled,
-                                  color: preset.settings.boundingBox.color,
-                                  lineWidth: preset.settings.boundingBox.lineWidth,
-                                  showLabel: preset.settings.boundingBox.showLabel,
-                                  labelBgColor: preset.settings.boundingBox.labelBgColor,
-                                  labelTextColor: preset.settings.boundingBox.labelTextColor,
-                                  labelFontSize: preset.settings.boundingBox.labelFontSize
-                                },
-                                thermal: {
-                                  paletteStops: preset.settings.thermal.paletteStops
-                                }
-                              };
-                            }}
-                          />
-                          <span>{preset.name}</span>
-                        </label>
-                      </div>
-                    ))}
+      </section>
+
+      {/* Divider Line */}
+      <div className="hidden lg:flex h-32 items-center px-16">
+        <svg className="w-full h-0.5" viewBox="0 0 1728 1" preserveAspectRatio="none">
+          <line
+            x1="0"
+            y1="0.5"
+            x2="1728"
+            y2="0.5"
+            stroke="white"
+            strokeWidth="0.25"
+            strokeDasharray="4 6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/* Services Sections */}
+      <div className="space-y-0">
+        {[
+          {
+            category: "Mission Services",
+            title: "End-to-end tech. On the ground, in the fight.",
+            description: "We deploy integrated teams and tech—fast. From software and systems to infrastructure and ops, we deliver where and when it counts.",
+            image: "/Card_MissionStatment.png"
+          },
+          {
+            category: "Insight Solutions",
+            title: "See more. Know first. Act faster.",
+            description: "We turn raw data into tactical foresight—fusing tradecraft, automation, and intelligence to remove blind spots and unlock action.",
+            image: "/Card_insightSolutions.png"
+          },
+          {
+            category: "Bcore Labs",
+            title: "Prototype today. Deploy tomorrow.",
+            description: "We build, test, and iterate at mission speed. Labs is your proving ground for what's next—no slide decks, just real solutions.",
+            image: "/Card_labs.png"
+          }
+        ].map((service, index) => (
+          <div key={index}>
+            <section className="w-full">
+              {/* Mobile Layout - Vertical Stack */}
+              <div className="block lg:hidden px-4 py-8">
+                <div className="space-y-6">
+                  {/* Full Width Image - Instagram Portrait Aspect Ratio */}
+                  <div className="w-full aspect-[4/5] relative">
+                    <Image
+                      src={service.image}
+                      alt={service.category}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                  {/* Full Width Text */}
+                  <div className="w-full space-y-4">
+                    <div className="font-kode text-xs text-white uppercase tracking-wider">
+                      {service.category}
+                    </div>
+                    <h2 
+                      className="font-jetbrains text-2xl font-extralight text-bcore-green uppercase"
+                      style={{wordSpacing: '-0.4em'}}
+                    >
+                      {service.title}
+                    </h2>
+                    <p className="font-jetbrains font-extralight text-xs text-white leading-relaxed mb-6">
+                      {service.description}
+                    </p>
+                    <button 
+                      ref={(el) => { buttonRefs.current[index] = el; }}
+                      data-text="Explore Capabilities"
+                      className="w-full bg-bcore-green text-black font-jetbrains font-extrabold text-xs uppercase px-4 py-2 cursor-pointer"
+                      onMouseEnter={() => handleButtonMouseEnter(index)}
+                      onMouseLeave={() => handleButtonMouseLeave(index)}
+                    >
+                      Explore Capabilities
+                    </button>
                   </div>
                 </div>
-                
-                <div className="space-y-3">
-                  <h3 className="text-white/90 text-xs font-medium mb-1">Export Current Settings</h3>
-                  <button
-                    onClick={exportSettings}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-none text-xs font-medium transition-colors"
-                  >
-                    Export to Clipboard
-                  </button>
-                  
-                  {settingsJson && (
-                    <div className="mt-3">
-                      <div className="text-white/70 text-xs mb-1">Settings copied to clipboard:</div>
-                      <div className="bg-[#111111]/50 p-2 rounded-none text-white/80 text-xs overflow-auto max-h-24 font-mono">
-                        {settingsJson}
+              </div>
+
+              {/* Desktop Layout - Side by Side */}
+              <div className="hidden lg:block overflow-clip relative size-full">
+                <div className="flex flex-row gap-16 items-start justify-start px-16 py-0 relative w-full">
+                  <div className="flex-1 max-w-[25%]">
+                    <div className="flex flex-col gap-4 items-start justify-start p-0 relative">
+                      <div className="font-kode text-xs text-white uppercase tracking-wider">
+                        {service.category}
                       </div>
+                      <h2 
+                        className="font-jetbrains text-2xl font-extralight text-bcore-green uppercase"
+                        style={{wordSpacing: '-0.4em'}}
+                      >
+                        {service.title}
+                      </h2>
+                      <p className="font-jetbrains font-extralight text-xs text-white leading-relaxed mb-6">
+                        {service.description}
+                      </p>
+                      <button 
+                        ref={(el) => { buttonRefs.current[index] = el; }}
+                        data-text="Explore Capabilities"
+                        className="bg-bcore-green text-black font-jetbrains font-extrabold text-xs uppercase px-4 py-2 cursor-pointer"
+                        onMouseEnter={() => handleButtonMouseEnter(index)}
+                        onMouseLeave={() => handleButtonMouseLeave(index)}
+                      >
+                        Explore Capabilities
+                      </button>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex-1 max-w-[75%]">
+                    <Image
+                      src={service.image}
+                      alt={service.category}
+                      width={800}
+                      height={450}
+                      className="w-full h-auto object-contain rounded-lg"
+                    />
+                  </div>
                 </div>
-                
-                <div className="space-y-3">
-                  <h3 className="text-white/90 text-xs font-medium mb-1">Import Settings</h3>
-                  <textarea
-                    placeholder="Paste settings JSON here..."
-                    className="w-full h-24 bg-[#111111]/50 p-2 rounded-none text-white/80 text-xs font-mono border border-white/10 focus:outline-none focus:border-blue-500"
-                    onChange={(e) => setSettingsJson(e.target.value)}
-                    value={settingsJson}
+              </div>
+            </section>
+            
+            {/* Divider Line */}
+            {index < 2 && (
+              <div className="h-32 flex items-center px-4 lg:px-16">
+                <svg className="w-full h-0.5" viewBox="0 0 1728 1" preserveAspectRatio="none">
+                  <line
+                    x1="0"
+                    y1="0.5"
+                    x2="1728"
+                    y2="0.5"
+                    stroke="white"
+                    strokeWidth="0.25"
+                    strokeDasharray="4 6"
+                    strokeLinecap="round"
                   />
-                  <button
-                    onClick={() => importSettings(settingsJson)}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-4 rounded-none text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!settingsJson}
-                  >
-                    Import Settings
-                  </button>
-                </div>
+                </svg>
               </div>
             )}
           </div>
-        )}
+        ))}
+      </div>
+
+      {/* Final Divider Line */}
+      <div className="h-32 flex items-center px-16">
+        <svg className="w-full h-0.5" viewBox="0 0 1728 1" preserveAspectRatio="none">
+          <line
+            x1="0"
+            y1="0.5"
+            x2="1728"
+            y2="0.5"
+            stroke="white"
+            strokeWidth="0.25"
+            strokeDasharray="4 6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
     </div>
-    
-    {/* Navigation Links */}
-    <div className="absolute bottom-4 left-4 z-20 flex gap-4">
-      <a 
-        href="/terrain" 
-        className="bg-[#111111]/40 hover:bg-[#111111]/60 text-white p-2.5 rounded-none transition-colors shadow-lg backdrop-blur-sm"
-      >
-        3D Terrain Map
-      </a>
-    </div>
-    </main>
   );
 }
