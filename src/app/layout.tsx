@@ -15,8 +15,8 @@ const kodeMono = Kode_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bcore - Outthink.Outbuild.Outfight.",
-  description: "Bcore delivers rapid mission impact for those charged with protecting the nation—through integrated intelligence, engineering, and tradecraft.",
+  title: "DNA Genetic Testing for Health, Ancestry & More",
+  description: "23andMe offers a saliva‑based DNA testing service that delivers comprehensive ancestry breakdowns across 4,000+ regions, personalized health insights, wellness and trait reports, and tools to connect with DNA relatives."
 };
 
 export default function RootLayout({

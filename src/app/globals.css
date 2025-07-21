@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Thin.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Thin.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Light.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Regular.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Medium.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Bold.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rialta';
+  src: url('/fonts/Rialta/Rialta-Black.woff2') format('woff2'),
+       url('/fonts/Rialta/Rialta-Black.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+}
+
+body {
+  background-color: white;
+  color: black;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

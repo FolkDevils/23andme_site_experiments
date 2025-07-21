@@ -8,8 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'jetbrains': ['var(--font-jetbrains-mono)'],
-        'kode': ['var(--font-kode-mono)'],
+        'rialta': ['Rialta', 'sans-serif'],
       },
       colors: {
         'bcore-green': '#d6e200',
