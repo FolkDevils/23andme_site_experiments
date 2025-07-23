@@ -104,34 +104,34 @@ export default function KitSection({ showFourCards }: KitSectionProps) {
 
 
   return (
-    <section className="flex flex-col items-center pb-48  w-full max-w-[1440px] mx-auto">
+    <section className="flex flex-col items-center pb-16 w-full max-w-[1440px] mx-auto">
       {/* Header */}
-      <div className="flex flex-wrap gap-2.5 items-center justify-center max-w-[400px] md:max-w-[1000px] p-8 md:p-16 px-10">
-        <p className="font-rialta font-light text-[24px]  md:text-[36px] text-[#282828] tracking-[-1.8px] leading-[36px] md:leading-[60px]">
+      <div className="flex flex-wrap gap-2 items-center justify-center max-w-[400px] md:max-w-4xl p-8 md:p-16 px-10">
+        <p className="font-rialta font-light text-kit-header text-text-primary">
           A kit for every
         </p>
         <div 
-          className="h-12 md:h-14 rounded-[100px] px-[18px] md:px-[22px] relative backdrop-blur-[50px] bg-white/[0.02] flex items-center justify-center"
+          className="h-12 md:h-14 rounded-full px-4.5 md:px-5 relative backdrop-blur-[50px] bg-white/5 flex items-center justify-center"
           style={{
           background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #74125D 0%, #D50F67 73%, #D282E6 100%) border-box',
           border: '2.5px solid transparent'
         }}
         >
-          <p className="font-rialta text-[20px] md:text-[28px] font-light md:font-light tracking-[-0.4px] md:tracking-[-0.56px] uppercase leading-none bg-gradient-to-r from-[#74125D] via-[#D50F67] to-[#D282E6] bg-clip-text text-transparent">
+          <p className="font-rialta text-kit-pills font-base tracking-[-0.4px] md:tracking-[-0.56px] uppercase leading-none bg-gradient-to-r from-[#74125D] via-primary to-[#D282E6] bg-clip-text text-transparent">
             CURIOSITY
           </p>
         </div>
-        <p className="font-rialta font-light text-[24px] md:text-[36px] text-[#282828] tracking-[-1.8px] leading-[36px] md:leading-[60px]">
+        <p className="font-rialta font-light text-kit-header text-text-primary">
           Find
         </p>
         <div 
-          className="h-12 md:h-14 rounded-[100px] px-[18px] md:px-[22px] relative backdrop-blur-[50px] bg-white/[0.02] flex items-center justify-center"
+          className="h-12 md:h-14 rounded-full px-4.5 md:px-5 relative backdrop-blur-[50px] bg-white/5 flex items-center justify-center"
           style={{
           background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #92C746 0%, #00B5B5 100%) border-box',
           border: '2.5px solid transparent'
         }}
         >
-          <p className="font-rialta text-[20px] md:text-[28px] font-light md:font-light tracking-[-0.4px] md:tracking-[-0.56px] uppercase leading-none bg-gradient-to-r from-[#92C746] to-[#00B5B5] bg-clip-text text-transparent">
+          <p className="font-rialta text-kit-pills font-light tracking-[-0.4px] md:tracking-[-0.56px] uppercase leading-none bg-gradient-to-r from-[#92C746] to-[#00B5B5] bg-clip-text text-transparent">
             YOURS
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function KitSection({ showFourCards }: KitSectionProps) {
       </div>
           
       {/* Mobile and tablet layouts - HORIZONTAL SCROLL */}
-      <div className="relative w-full  lg:hidden">
+      <div className="relative w-full lg:hidden">
         {isScrolled && (
           <button 
             onClick={() => scroll('left')}
@@ -165,7 +165,7 @@ export default function KitSection({ showFourCards }: KitSectionProps) {
           className="flex gap-4 px-10 overflow-x-auto scrollbar-hide"
         >
           {kits.map((kit) => (
-            <div key={kit.type} className="flex-shrink-0 w-[80vw] sm:w-[320px]">
+            <div key={kit.type} className="flex-shrink-0 w-[80vw] sm:w-80">
               <KitCard {...kit} />
             </div>
           ))}
@@ -182,7 +182,7 @@ export default function KitSection({ showFourCards }: KitSectionProps) {
       </div>
 
       {/* Disclaimer */}
-      <p className="font-rialta text-[14px] text-[#555555] text-center tracking-[-0.14px] leading-[20px] max-w-[896px] mx-auto px-10 pt-4">
+      <p className="font-rialta text-button-text text-text-secondary text-center max-w-4xl mx-auto px-10 pt-4">
         Limit 3. Offer ends Oct 31. Ancestry Service comparison based on prevailing price of $119 on July 17, 2024.
       </p>
     </section>

@@ -4,7 +4,10 @@ import Navigation from '@/components/Navigation';
 import EmailBanner from '@/components/EmailBanner';
 import Hero from '@/components/Hero';
 import KitSection from '@/components/KitSection';
-import { Leva, useControls, button } from 'leva';
+import ServiceCarousel from '@/components/ServiceCarousel';
+import TotalHealth from '@/components/TotalHealth';
+import Privacy from '@/components/Privacy';
+import FontController from '@/components/FontController';
 import { useState, useEffect } from 'react';
 
 const heroStates = [
@@ -52,81 +55,39 @@ const heroStates = [
 ];
 
 export default function Home() {
-  const [showLeva, setShowLeva] = useState(true); // Keep Leva visible for this task
-
-  // Centralized state management
-  const [activeModule, setActiveModule] = useState('Hero');
-  const [heroStateIndex, setHeroStateIndex] = useState(0);
+  const [showFontController, setShowFontController] = useState(false);
+  
+  // State previously managed by Leva
   const [heroTheme, setHeroTheme] = useState<'Gradient' | 'White'>('Gradient');
   const [cardState, setCardState] = useState(true); // true = 4 cards, false = 3 cards
+  const [heroStateIndex, setHeroStateIndex] = useState(0);
 
-  // Leva Controls
-  useControls(() => {
-    const baseSchema = {
-      'Active Module': {
-        value: activeModule,
-        options: ['Hero', 'Cards'],
-        onChange: (value: string) => setActiveModule(value),
-      },
-    };
 
-    if (activeModule === 'Hero') {
-      return {
-        ...baseSchema,
-        Theme: {
-          value: heroTheme,
-          options: ['Gradient', 'White'],
-          onChange: (v: 'Gradient' | 'White') => setHeroTheme(v),
-        },
-      };
-    }
 
-    if (activeModule === 'Cards') {
-      return {
-        ...baseSchema,
-        'Toggle Layout': button(() => {
-          setCardState((prev) => !prev);
-        }),
-      };
-    }
-
-    return baseSchema;
-  }, [activeModule, heroTheme, cardState]);
-
+  const toggleFontController = () => setShowFontController((prev) => !prev);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      // Toggle Leva panel with 'L'
-      if (event.key.toLowerCase() === 'l' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        setShowLeva(prev => !prev);
-        return; // Prevent further action
-      }
-
-      // Handle arrow keys based on active module
       if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
         event.preventDefault(); // Prevent browser scrolling
         
-        switch (activeModule) {
-          case 'Hero':
-            setHeroStateIndex((prev) => {
-              const increment = event.key === 'ArrowRight' ? 1 : -1;
-              return (prev + increment + heroStates.length) % heroStates.length;
-            });
-            break;
-          case 'Cards':
-            setCardState((prev) => !prev);
-            break;
-        }
+        setHeroStateIndex((prev) => {
+          const increment = event.key === 'ArrowRight' ? 1 : -1;
+          return (prev + increment + heroStates.length) % heroStates.length;
+        });
+      } else if (event.key === 'h' || event.key === 'H') {
+        event.preventDefault(); // Prevent any default behavior
+        toggleFontController();
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [activeModule]); // Rerun effect if activeModule changes
+  }, []); // Remove unnecessary dependency
 
   return (
     <>
-      <Navigation />
+      <Navigation onLogoClick={toggleFontController} />
       <EmailBanner />
       <Hero 
         headlineData={heroStates[heroStateIndex]}
@@ -135,7 +96,79 @@ export default function Home() {
       <KitSection 
         showFourCards={cardState}
       />
-      {showLeva && <Leva />}
+      <ServiceCarousel 
+        quoteCaption="Eventually the fear and the sadness gave way to hope."
+        storyLink="Watch Kristin's story"
+        mobileBackgroundImage="/services/Service-Slide-Sm_01.png"
+      />
+      <ServiceCarousel 
+        quoteCaption="It never would've occurred to me. It just wasn't a part of our world."
+        storyLink="Watch Hilary's story"
+        backgroundImage="/services/Service-Slide-LG_02.png"
+        mobileBackgroundImage="/services/Service-Slide-Sm_02.png"
+        buttonColor="#D50F67"
+        arrowColor="#D50F67"
+        cardGradientFrom="#D50F67"
+        cardGradientTo="#D282E6"
+        slides={[
+          {
+            id: 'quote',
+            type: 'quote',
+            content: {
+              quote: "It never would've occurred to me. It just wasn't a part of our world.",
+              linkText: "Watch Hilary's story",
+              linkUrl: "#"
+            }
+          },
+          {
+            id: 'gradient',
+            type: 'gradient',
+            gradient: 'linear-gradient(135deg, #D50F67 0%, #D282E6 100%)'
+          }
+        ]}
+      />
+      <ServiceCarousel 
+        quoteCaption="I always wanted to know who are my ancestors? Who are the people that made me, me?"
+        storyLink="Watch Jordan's story"
+        backgroundImage="/services/Service-Slide-LG_03.png"
+        mobileBackgroundImage="/services/Service-Slide-Sm_03.png"
+        buttonColor="#0081A5"
+        arrowColor="#0081A5"
+        cardGradientFrom="#0081A5"
+        cardGradientTo="#9FFAEC"
+        slides={[
+          {
+            id: 'quote',
+            type: 'quote',
+            content: {
+              quote: "I always wanted to know who are my ancestors? Who are the people that made me, me?",
+              linkText: "Watch Jordan's story",
+              linkUrl: "#"
+            }
+          },
+          {
+            id: 'gradient',
+            type: 'gradient',
+            gradient: 'linear-gradient(135deg, #0081A5 0%, #9FFAEC 100%)'
+          }
+        ]}
+      />
+
+      <TotalHealth />
+
+      <Privacy />
+
+      {showFontController && (
+        <FontController
+          heroTheme={heroTheme}
+          setHeroTheme={setHeroTheme}
+          cardState={cardState}
+          setCardState={setCardState}
+        />
+        
+      )}
     </>
+
+    
   );
 }

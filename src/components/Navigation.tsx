@@ -1,21 +1,24 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import Button from './Button';
 
-export default function Navigation() {
+interface NavigationProps {
+  onLogoClick: () => void;
+}
+
+export default function Navigation({ onLogoClick }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <nav className="bg-white relative w-full">
       {/* Desktop Navigation */}
-      <div className="hidden lg:flex flex-row items-center justify-between px-[72px] py-2">
+      <div className="hidden lg:flex flex-row items-center justify-between px-10 py-2">
         {/* Left Side */}
-        <div className="flex flex-row items-center gap-[19.2px]">
+        <div className="flex flex-row items-center gap-5">
           {/* Logo */}
-          <Link href="/" className="block relative w-[69px] h-[40px]">
+          <button onClick={onLogoClick} className="block relative w-[69px] h-10">
             <Image
               src="/23andme-logo.svg"
               alt="23andMe Logo"
@@ -23,10 +26,10 @@ export default function Navigation() {
               className="object-contain"
               priority
             />
-          </Link>
+          </button>
 
           {/* Main Navigation */}
-          <div className="flex flex-row gap-[25.6px] items-center">
+          <div className="flex flex-row gap-6 items-center">
             {/* Shop Dropdown */}
             <Button variant="text" size="small">
               <div className="flex items-center gap-1">
@@ -73,13 +76,14 @@ export default function Navigation() {
             <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
               <path
                 d="M25.666 18.334C26.6785 18.334 27.5 19.1545 27.5 20.167C27.4998 21.1794 26.6784 22 25.666 22H1.83301C0.82073 21.9998 0.000153469 21.1793 0 20.167C0 19.1546 0.820636 18.3342 1.83301 18.334H25.666ZM25.666 9.16699C26.6785 9.16699 27.5 9.9875 27.5 11C27.5 12.0125 26.6785 12.833 25.666 12.833H1.83301C0.820635 12.8328 0 12.0124 0 11C2.2147e-05 9.98761 0.820649 9.16717 1.83301 9.16699H25.666ZM25.666 0C26.6784 0 27.4998 0.820654 27.5 1.83301C27.5 2.84553 26.6785 3.66602 25.666 3.66602H1.83301C0.820636 3.66584 0 2.84542 0 1.83301C0.000197881 0.820763 0.820758 0.000175863 1.83301 0H25.666Z"
-                fill="#9C9EA1"
+                fill="currentColor"
+                className="text-text-muted"
               />
             </svg>
           </button>
 
           {/* Mobile Logo */}
-          <Link href="/" className="block relative w-[71px] h-[32px]">
+          <button onClick={onLogoClick} className="block relative w-[71px] h-8">
             <Image
               src="/23andme-logo.svg"
               alt="23andMe Logo"
@@ -87,7 +91,7 @@ export default function Navigation() {
               className="object-contain"
               priority
             />
-          </Link>
+          </button>
         </div>
 
         {/* Mobile Shop Button */}

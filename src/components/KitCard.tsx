@@ -35,14 +35,14 @@ export default function KitCard({
 
   const discountBgColors = {
     ancestry: 'bg-[#e5f8f8] text-[#0e8c8c]',
-    healthancestry: 'bg-[rgba(255,180,100,0.1)] text-[#d12f11]',
-    premium: 'bg-[rgba(255,180,100,0.1)] text-[#d12f11]',
+    healthancestry: 'bg-primary/10 text-brand-red',
+    premium: 'bg-primary/10 text-brand-red',
     totalhealth: ''
   };
 
   return (
     <div 
-      className="bg-white/80 backdrop-blur-sm rounded-3xl border border-[rgba(40,40,40,0.1)] h-[584px] w-full overflow-hidden relative"
+      className="bg-white/80 backdrop-blur-sm rounded-3xl border border-black/10 h-[584px] w-full overflow-hidden relative"
     >
       <div className="px-5 py-6 h-full flex flex-col justify-between relative z-10">
         {/* Background Image */}
@@ -57,15 +57,15 @@ export default function KitCard({
 
         {/* Top Content */}
         <div className="flex flex-col gap-2.5 relative z-20">
-          <p className="font-rialta text-[12px] text-[#282828] tracking-[-0.12px] leading-[16px]">
+          <p className="font-rialta text-card-eyebrow text-text-primary">
             {title}
           </p>
           <p 
-            className={`font-rialta text-[33px] tracking-[-1.32px] leading-[1.1] ${gradientColors[type]} bg-clip-text text-transparent`}
+            className={`font-rialta text-card-header ${gradientColors[type]} bg-clip-text text-transparent`}
           >
             {subtitle}
           </p>
-          <p className="font-rialta text-[12px] text-[#555555] tracking-[-0.12px] leading-[16px] max-w-[280px]">
+          <p className="font-rialta text-caption-text text-text-secondary max-w-[280px]">
             {description}
           </p>
         </div>
@@ -75,24 +75,24 @@ export default function KitCard({
           {/* Price Section */}
           <div className="flex flex-col gap-2">
             {originalPrice && (
-              <p className="font-rialta text-[24px] text-[#939393] tracking-[-0.96px] line-through">
+              <p className="font-rialta text-price-small text-text-muted line-through">
                 ${originalPrice}
               </p>
             )}
             <div className="flex flex-row gap-2 items-end">
-              <p className="font-rialta font-light text-[36px] text-[#282828] tracking-[-1.08px] leading-[40px]">
+              <p className="font-rialta text-price-text text-text-primary">
                 ${price}
               </p>
               {discount && (
-                <div className={`backdrop-blur-[25px] px-[15px] py-1 rounded-[19.789px] ${discountBgColors[type]}`}>
-                  <p className="font-rialta text-[15px] tracking-[-0.3px] uppercase leading-none">
+                <div className={`backdrop-blur-[25px] px-4 py-1 rounded-full ${discountBgColors[type]}`}>
+                  <p className="font-rialta text-button-text uppercase leading-none">
                     {discount}% OFF
                   </p>
                 </div>
               )}
             </div>
             {fsaEligible && (
-              <p className="font-rialta text-[12px] text-[#9c9ea1] tracking-[-0.24px] leading-none">
+              <p className="font-rialta text-caption-text text-text-muted/80">
                 FSA/HSA Eligible
               </p>
             )}
