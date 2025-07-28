@@ -67,6 +67,71 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* FAQ Typography Classes */
+  .text-faq-title {
+    font-size: var(--font-size-faq-title-mobile);
+    line-height: var(--line-height-faq-title);
+  }
+
+  @media (min-width: 768px) {
+    .text-faq-title {
+      font-size: var(--font-size-faq-title-tablet);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .text-faq-title {
+      font-size: var(--font-size-faq-title-desktop);
+    }
+  }
+
+  /* Email Capture Typography Classes */
+  .text-email-capture-title {
+    font-size: var(--font-size-email-capture-title-mobile);
+    line-height: var(--line-height-email-capture-title);
+  }
+
+  .text-email-capture-subtitle {
+    font-size: var(--font-size-email-capture-subtitle-mobile);
+    line-height: var(--line-height-email-capture-subtitle);
+  }
+
+  @media (min-width: 768px) {
+    .text-email-capture-title {
+      font-size: var(--font-size-email-capture-title-tablet);
+    }
+    .text-email-capture-subtitle {
+      font-size: var(--font-size-email-capture-subtitle-tablet);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .text-email-capture-title {
+      font-size: var(--font-size-email-capture-title-desktop);
+    }
+    .text-email-capture-subtitle {
+      font-size: var(--font-size-email-capture-subtitle-desktop);
+    }
+  }
+
+  /* Footer Typography Classes */
+  .text-disclaimer-text {
+    font-size: var(--font-size-disclaimer-text-mobile);
+    line-height: var(--line-height-disclaimer-text);
+  }
+
+  @media (min-width: 768px) {
+    .text-disclaimer-text {
+      font-size: var(--font-size-disclaimer-text-tablet);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .text-disclaimer-text {
+      font-size: var(--font-size-disclaimer-text-desktop);
+    }
+  }
 }
 
 

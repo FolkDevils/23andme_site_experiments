@@ -24,6 +24,8 @@ interface ServiceCarouselProps {
   storyLink?: string;
   backgroundImage?: string;
   mobileBackgroundImage?: string;
+  backgroundVideo?: string;
+  mobileBackgroundVideo?: string;
   buttonColor?: string;
   arrowColor?: string;
   cardGradientFrom?: string;
@@ -56,6 +58,8 @@ export default function ServiceCarousel({
   storyLink = "Watch Kristin's story",
   backgroundImage = "/services/Service-Slide-LG.png",
   mobileBackgroundImage = "/services/Service-Slide-Sm_01.png",
+  backgroundVideo,
+  mobileBackgroundVideo,
   buttonColor = "#D12F11",
   arrowColor = "#D12F11",
   cardGradientFrom = "#FF6D19",
@@ -167,15 +171,40 @@ export default function ServiceCarousel({
             {slides.map((slide) => (
               <div key={slide.id} className="flex-shrink-0 w-[80vw] sm:w-80 md:w-[600px] lg:w-[800px] xl:w-[1200px] h-[700px] lg:h-[752px] rounded-3xl relative overflow-hidden">
                 {slide.type === 'quote' && slide.content ? (
-                  <div 
-                    className="w-full h-full flex flex-col justify-end p-4.5"
-                    style={{
-                      backgroundImage: `url(${isMobile ? mobileBackgroundImage : backgroundImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  >
-                    <div className="rounded-lg w-full">
+                  <div className="w-full h-full flex flex-col justify-end p-4.5 relative">
+                    {/* Background Video or Image */}
+                    {(isMobile ? mobileBackgroundVideo : backgroundVideo) ? (
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+                      >
+                        <source src={isMobile ? mobileBackgroundVideo : backgroundVideo} type="video/mp4" />
+                        {/* Fallback to image if video fails */}
+                        <div 
+                          className="absolute inset-0 w-full h-full rounded-3xl"
+                          style={{
+                            backgroundImage: `url(${isMobile ? mobileBackgroundImage : backgroundImage})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                      </video>
+                    ) : (
+                      <div 
+                        className="absolute inset-0 w-full h-full rounded-3xl"
+                        style={{
+                          backgroundImage: `url(${isMobile ? mobileBackgroundImage : backgroundImage})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }}
+                      />
+                    )}
+                    
+                    {/* Content Overlay */}
+                    <div className="rounded-lg w-full relative z-10">
                       <div className="flex flex-col gap-4 md:gap-10 px-4 md:pl-8 py-4 md:py-6 w-full">
                         {/* Quote with hang quotes */}
                         <div className="relative">

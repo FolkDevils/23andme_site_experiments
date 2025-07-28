@@ -8,13 +8,15 @@ interface PrivacyProps {
   description?: string;
   buttonText?: string;
   backgroundImage?: string;
+  backgroundVideo?: string;
 }
 
 export default function Privacy({
   title = "Privacy by design.",
   description = "There is no advanced science that comes before your privacy. That's why, since day one, we've committed ourselves to protecting your privacy. And if you change your mind, you can opt out at any time, now or in the future. Read more about our protocol to keep your data private, in any scenario.",
   buttonText = "Learn more",
-  backgroundImage = "/privacy/Privacy.png"
+  backgroundImage = "/privacy/Privacy.png",
+  backgroundVideo
 }: PrivacyProps) {
 
   return (
@@ -47,16 +49,36 @@ export default function Privacy({
             </div>
           </div>
 
-          {/* Image - Bottom on mobile, Left on desktop */}
+          {/* Media - Bottom on mobile, Left on desktop */}
           <div className="w-full lg:w-1/2 order-2 lg:order-1">
             <div className="relative h-[400px] md:h-[500px] lg:h-[600px] rounded-3xl overflow-hidden">
-              <Image
-                src={backgroundImage}
-                alt="Privacy by design"
-                fill
-                className="object-cover"
-                priority
-              />
+              {backgroundVideo ? (
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                >
+                  <source src={backgroundVideo} type="video/mp4" />
+                  {/* Fallback to image if video fails */}
+                  <Image
+                    src={backgroundImage}
+                    alt="Privacy by design"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </video>
+              ) : (
+                <Image
+                  src={backgroundImage}
+                  alt="Privacy by design"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              )}
             </div>
           </div>
         </div>

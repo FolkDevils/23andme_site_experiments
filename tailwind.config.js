@@ -65,18 +65,16 @@ module.exports = {
   			}
   		},
   		fontSize: {
-        'button-text': [`var(--font-size-button-text, 0.875rem)`, { lineHeight: `var(--line-height-button-text, 1.25)` }],
-        'body-copy': [`var(--font-size-body-copy, 1rem)`, { lineHeight: `var(--line-height-body-copy, 1.5)` }],
-        'caption-text': [`var(--font-size-caption-text, 0.75rem)`, { lineHeight: `var(--line-height-caption-text, 1.25)` }],
-        'card-eyebrow': [`var(--font-size-card-eyebrow, 0.75rem)`, { lineHeight: `var(--line-height-card-eyebrow, 1)` }],
-        'card-header': [`var(--font-size-card-header, 2.0625rem)`, { lineHeight: `var(--line-height-card-header, 1.1)` }],
-        'eyebrow-text': [`var(--font-size-eyebrow-text, 1rem)`, { lineHeight: `var(--line-height-eyebrow-text, 1)` }],
-        'heading-1': [`var(--font-size-heading-1, 2.25rem)`, { lineHeight: `var(--line-height-heading-1, 1.1)` }],
-        'price-text': [`var(--font-size-price-text, 2.25rem)`, { lineHeight: `var(--line-height-price-text, 1.1)` }],
-        'price-small': [`var(--font-size-price-small, 1.5rem)`, { lineHeight: `var(--line-height-price-small, 1)` }],
-        'quote-text': [`var(--font-size-quote-text, 2.5rem)`, { lineHeight: `var(--line-height-quote-text, 1.2)` }],
-        'story-link': [`var(--font-size-story-link, 1rem)`, { lineHeight: `var(--line-height-story-link, 1.5)` }],
-        'totalhealth-text': [`var(--font-size-totalhealth-text, 1rem)`, { lineHeight: `var(--line-height-totalhealth-text, 1.4)` }],
+        'button-text': [`var(--font-size-button-text-desktop)`, { lineHeight: `var(--line-height-button-text)` }],
+        'body-copy': [`var(--font-size-body-copy)`, { lineHeight: `var(--line-height-body-copy)` }],
+        'caption-text': [`var(--font-size-caption-text)`, { lineHeight: `var(--line-height-caption-text)` }],
+        'card-eyebrow': [`var(--font-size-card-eyebrow)`, { lineHeight: `var(--line-height-card-eyebrow)` }],
+        'card-header': [`var(--font-size-card-header)`, { lineHeight: `var(--line-height-card-header)` }],
+        'eyebrow-text': [`var(--font-size-eyebrow-text)`, { lineHeight: `var(--line-height-eyebrow-text)` }],
+        'heading-1': [`var(--font-size-heading-1)`, { lineHeight: `var(--line-height-heading-1)` }],
+        'price-text': [`var(--font-size-price-text)`, { lineHeight: `var(--line-height-price-text)` }],
+        'price-small': [`var(--font-size-price-small)`, { lineHeight: `var(--line-height-price-small)` }],
+        'totalhealth-text': [`var(--font-size-totalhealth-text)`, { lineHeight: `var(--line-height-totalhealth-text)` }],
       },
   		spacing: {
   			'4.5': '1.125rem'
@@ -162,6 +160,16 @@ module.exports = {
           },
           '@media (min-width: 1024px)': {
             'font-size': 'var(--font-size-story-link-desktop, 1rem)',
+          },
+        },
+        '.text-button-text': {
+          'font-size': 'var(--font-size-button-text-mobile)',
+          'line-height': 'var(--line-height-button-text)',
+          '@media (min-width: 768px)': {
+            'font-size': 'var(--font-size-button-text-tablet)',
+          },
+          '@media (min-width: 1024px)': {
+            'font-size': 'var(--font-size-button-text-desktop)',
           },
         },
       })

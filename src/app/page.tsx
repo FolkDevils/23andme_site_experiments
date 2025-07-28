@@ -2,12 +2,18 @@
 
 import Navigation from '@/components/Navigation';
 import EmailBanner from '@/components/EmailBanner';
-import Hero from '@/components/Hero';
+
+import HeroAnimated from '@/components/HeroAnimated';
 import KitSection from '@/components/KitSection';
 import ServiceCarousel from '@/components/ServiceCarousel';
 import TotalHealth from '@/components/TotalHealth';
 import Privacy from '@/components/Privacy';
-import FontController from '@/components/FontController';
+import FAQ from '@/components/FAQ';
+import EmailCapture from '@/components/EmailCapture';
+import Footer from '@/components/Footer';
+import SiteController from '@/components/SiteController';
+import TypographyController from '@/components/TypographyController';
+import HeroColorController from '@/components/HeroColorController';
 import { useState, useEffect } from 'react';
 
 const heroStates = [
@@ -55,16 +61,19 @@ const heroStates = [
 ];
 
 export default function Home() {
-  const [showFontController, setShowFontController] = useState(false);
+  // Individual panel visibility states
+  const [showSiteController, setShowSiteController] = useState(false);
+  const [showTypographyController, setShowTypographyController] = useState(false);
+  const [showHeroColorController, setShowHeroColorController] = useState(false);
   
   // State previously managed by Leva
   const [heroTheme, setHeroTheme] = useState<'Gradient' | 'White'>('Gradient');
-  const [cardState, setCardState] = useState(true); // true = 4 cards, false = 3 cards
+  const [cardState, setCardState] = useState(false); // true = 4 cards, false = 3 cards
   const [heroStateIndex, setHeroStateIndex] = useState(0);
 
-
-
-  const toggleFontController = () => setShowFontController((prev) => !prev);
+  const toggleSiteController = () => setShowSiteController((prev) => !prev);
+  const toggleTypographyController = () => setShowTypographyController((prev) => !prev);
+  const toggleHeroColorController = () => setShowHeroColorController((prev) => !prev);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -75,9 +84,15 @@ export default function Home() {
           const increment = event.key === 'ArrowRight' ? 1 : -1;
           return (prev + increment + heroStates.length) % heroStates.length;
         });
-      } else if (event.key === 'h' || event.key === 'H') {
-        event.preventDefault(); // Prevent any default behavior
-        toggleFontController();
+      } else if (event.key === '1') {
+        event.preventDefault();
+        toggleSiteController();
+      } else if (event.key === '2') {
+        event.preventDefault();
+        toggleTypographyController();
+      } else if (event.key === '3') {
+        event.preventDefault();
+        toggleHeroColorController();
       }
     };
 
@@ -87,9 +102,9 @@ export default function Home() {
 
   return (
     <>
-      <Navigation onLogoClick={toggleFontController} />
+      <Navigation onLogoClick={toggleSiteController} />
       <EmailBanner />
-      <Hero 
+      <HeroAnimated 
         headlineData={heroStates[heroStateIndex]}
         heroTheme={heroTheme}
       />
@@ -99,12 +114,13 @@ export default function Home() {
       <ServiceCarousel 
         quoteCaption="Eventually the fear and the sadness gave way to hope."
         storyLink="Watch Kristin's story"
+        backgroundVideo="/services/Service-Slide-LG.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_01.png"
       />
       <ServiceCarousel 
         quoteCaption="It never would've occurred to me. It just wasn't a part of our world."
         storyLink="Watch Hilary's story"
-        backgroundImage="/services/Service-Slide-LG_02.png"
+        backgroundVideo="/services/Service-Slide-LG_02.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_02.png"
         buttonColor="#D50F67"
         arrowColor="#D50F67"
@@ -130,7 +146,7 @@ export default function Home() {
       <ServiceCarousel 
         quoteCaption="I always wanted to know who are my ancestors? Who are the people that made me, me?"
         storyLink="Watch Jordan's story"
-        backgroundImage="/services/Service-Slide-LG_03.png"
+        backgroundVideo="/services/Service-Slide-LG_03.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_03.png"
         buttonColor="#0081A5"
         arrowColor="#0081A5"
@@ -154,19 +170,32 @@ export default function Home() {
         ]}
       />
 
-      <TotalHealth />
+      <TotalHealth backgroundVideo="/totalhealth/TH_Desktop.mp4" />
 
-      <Privacy />
+      <Privacy backgroundVideo="/privacy/Privacy.mp4" />
 
-      {showFontController && (
-        <FontController
-          heroTheme={heroTheme}
-          setHeroTheme={setHeroTheme}
-          cardState={cardState}
-          setCardState={setCardState}
-        />
-        
-      )}
+      <FAQ />
+
+      <EmailCapture />
+
+      <Footer />
+
+      {/* Control Panels */}
+      <SiteController
+        heroTheme={heroTheme}
+        setHeroTheme={setHeroTheme}
+        cardState={cardState}
+        setCardState={setCardState}
+        isVisible={showSiteController}
+      />
+      
+      <TypographyController
+        isVisible={showTypographyController}
+      />
+      
+      <HeroColorController
+        isVisible={showHeroColorController}
+      />
     </>
 
     

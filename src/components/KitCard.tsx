@@ -42,7 +42,7 @@ export default function KitCard({
 
   return (
     <div 
-      className="bg-white/80 backdrop-blur-sm rounded-3xl border border-black/10 h-[584px] w-full overflow-hidden relative"
+      className="bg-white/80 backdrop-blur-sm rounded-3xl border border-black/10 h-[584px] w-full overflow-hidden relative group cursor-pointer"
     >
       <div className="px-5 py-6 h-full flex flex-col justify-between relative z-10">
         {/* Background Image */}
@@ -51,7 +51,7 @@ export default function KitCard({
             src={imageSrc}
             alt={title}
             fill
-            className="object-cover scale-[115%]"
+            className="object-cover scale-[115%] transition-transform duration-300 ease-out group-hover:scale-[125%]"
           />
         </div>
 
@@ -100,7 +100,11 @@ export default function KitCard({
 
           {/* CTA Button */}
           <div className="flex justify-start">
-            <Button variant="outline-dark" size="medium">
+            <Button 
+              variant="outline-dark" 
+              size="medium"
+              className="group-hover:bg-primary group-hover:text-white group-hover:border-primary"
+            >
               Learn more
             </Button>
           </div>

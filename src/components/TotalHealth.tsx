@@ -10,6 +10,8 @@ interface TotalHealthProps {
   buttonText?: string;
   backgroundImage?: string;
   mobileBackgroundImage?: string;
+  backgroundVideo?: string;
+  mobileBackgroundVideo?: string;
 }
 
 export default function TotalHealth({
@@ -17,7 +19,9 @@ export default function TotalHealth({
   description = title,
   buttonText = "Learn more",
   backgroundImage = "/totalhealth/TH_Desktop.png",
-  mobileBackgroundImage = "/totalhealth/TH_Mobile.png"
+  mobileBackgroundImage = "/totalhealth/TH_Mobile.png",
+  backgroundVideo,
+  mobileBackgroundVideo
 }: TotalHealthProps) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -31,18 +35,48 @@ export default function TotalHealth({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Determine which media to use based on screen size and available props
+  const currentVideo = isMobile ? mobileBackgroundVideo : backgroundVideo;
+  const currentImage = isMobile ? mobileBackgroundImage : backgroundImage;
+  const shouldUseVideo = currentVideo && (!isMobile || mobileBackgroundVideo);
+
   return (
-    <section className="w-full pb-16">
+    <section className="w-full pb-16 pt-16">
       <div className="max-w-[1440px] mx-auto px-8">
-        <div 
-          className="relative h-[700px] md:h-[600px] lg:h-[600px] rounded-3xl overflow-hidden"
-          style={{
-            backgroundImage: `url("${isMobile ? mobileBackgroundImage : backgroundImage}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundColor: '#6b7280' // Fallback gray color
-          }}
-        >
+        <div className="relative h-[700px] md:h-[600px] lg:h-[600px] rounded-3xl overflow-hidden">
+          {/* Background Media */}
+          {shouldUseVideo ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+            >
+              <source src={currentVideo} type="video/mp4" />
+              {/* Fallback to image if video fails */}
+              <div 
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  backgroundImage: `url("${currentImage}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundColor: '#6b7280'
+                }}
+              />
+            </video>
+          ) : (
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: `url("${currentImage}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: '#6b7280'
+              }}
+            />
+          )}
+
           {/* Content Overlay */}
           <div className="absolute inset-0 p-6 md:p-8 lg:p-16 flex items-start md:items-end ">
             <div 
