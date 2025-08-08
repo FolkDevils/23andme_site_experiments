@@ -30,6 +30,7 @@ interface ServiceCarouselProps {
   arrowColor?: string;
   cardGradientFrom?: string;
   cardGradientTo?: string;
+  accentColor?: string; // controls eyebrow and tab colors
 }
 
 export default function ServiceCarousel({
@@ -63,7 +64,8 @@ export default function ServiceCarousel({
   buttonColor = "#D12F11",
   arrowColor = "#D12F11",
   cardGradientFrom = "#FF6D19",
-  cardGradientTo = "#D12F11"
+  cardGradientTo = "#D12F11",
+  accentColor
 }: ServiceCarouselProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -130,7 +132,7 @@ export default function ServiceCarousel({
         <div className="flex flex-col items-center w-full">
           <div className=" py-0 md:px-40 w-full">
             <div className="flex flex-col gap-6 items-center text-center w-full">
-              <div className="font-rialta font-semibold text-eyebrow-text text-brand-red">
+              <div className="font-rialta font-semibold text-eyebrow-text" style={{ color: accentColor || buttonColor }}>
                 {eyebrow}
               </div>
               <div className="font-rialta font-light text-heading-1 text-text-primary">
@@ -144,8 +146,8 @@ export default function ServiceCarousel({
             {/* Tab Bar */}
             <div className="flex flex-row gap-2.5 items-start justify-center pt-10 w-full">
               {tabs.map((tab, index) => (
-                <div key={index} className="flex flex-row gap-2 items-center justify-start p-4 rounded-full border border-brand-red relative">
-                  <div className="font-rialta text-button-text text-brand-red whitespace-nowrap">
+                <div key={index} className="flex flex-row gap-2 items-center justify-start p-4 rounded-full border relative" style={{ borderColor: accentColor || buttonColor }}>
+                  <div className="font-rialta text-button-text whitespace-nowrap" style={{ color: accentColor || buttonColor }}>
                     {tab}
                   </div>
                 </div>
