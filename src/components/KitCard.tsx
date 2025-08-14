@@ -20,9 +20,6 @@ export default function KitCard({
   title,
   subtitle,
   description,
-  price,
-  originalPrice,
-  discount,
   fsaEligible = false,
   imageSrc
 }: KitCardProps) {
@@ -33,12 +30,7 @@ export default function KitCard({
     totalhealth: 'bg-gradient-to-r from-[#FF6D19] to-[#D12F11]'
   };
 
-  const discountBgColors = {
-    ancestry: 'bg-[#e5f8f8] text-[#0e8c8c]',
-    healthancestry: 'bg-primary/10 text-brand-red',
-    premium: 'bg-primary/10 text-brand-red',
-    totalhealth: ''
-  };
+  // Removed discount styles since discount touts are no longer displayed
 
   return (
     <div 
@@ -74,22 +66,10 @@ export default function KitCard({
         <div className="flex flex-col gap-6 relative z-20">
           {/* Price Section */}
           <div className="flex flex-col gap-2">
-            {originalPrice && (
-              <p className="font-rialta text-price-small text-text-muted line-through">
-                ${originalPrice}
-              </p>
-            )}
             <div className="flex flex-row gap-2 items-end">
               <p className="font-rialta text-price-text text-text-primary">
-                ${price}
+                $XX
               </p>
-              {discount && (
-                <div className={`backdrop-blur-[25px] px-4 py-1 rounded-full ${discountBgColors[type]}`}>
-                  <p className="font-rialta text-button-text uppercase leading-none">
-                    {discount}% OFF
-                  </p>
-                </div>
-              )}
             </div>
             {fsaEligible && (
               <p className="font-rialta text-caption-text text-text-muted/80">
