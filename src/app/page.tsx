@@ -3,7 +3,7 @@
 import Navigation from '@/components/Navigation';
 import EmailBanner from '@/components/EmailBanner';
 
-import HeroAnimated from '@/components/HeroAnimated';
+import HeroLogoAnimated from '@/components/HeroLogoAnimated';
 import KitSection from '@/components/KitSection';
 import ServiceCarousel from '@/components/ServiceCarousel';
 import TotalHealth from '@/components/TotalHealth';
@@ -16,51 +16,7 @@ import TypographyController from '@/components/TypographyController';
 import HeroColorController from '@/components/HeroColorController';
 import { useState, useEffect } from 'react';
 
-const heroStates = [
-
-  { // State 1
-    eyebrow: '23ANDME+ PREMIUM',
-    lines: [
-      [{ text: 'Bound' }, { text: 'ONLY', pilled: true }, { text: 'by the' }],
-      [{ text: 'reaches of' }, { text: 'IMAGINATION', pilled: true }]
-    ],
-    subheadline: 'Emerging genetics in an evolving membership.'
-  },
-  { // State 0 (Original)
-    eyebrow: '23ANDME+ PREMIUM',
-    lines: [
-      [{ text: 'A' }, { text: 'SUBSCRIPTION', pilled: true }],
-      [{ text: 'at the speed of' }],
-      [{ text: 'science', pilled: true }]
-    ],
-    subheadline: 'Emerging genetics in an evolving membership.'
-  },
-
-  { // State 2
-    eyebrow: '23ANDME+ PREMIUM',
-    lines: [
-      [{ text: 'Gets' }, { text: 'SMARTER', pilled: true }, { text: 'every' }],
-      [{ text: 'time' }, { text: 'SCIENCE', pilled: true }, { text: 'does' }]
-    ],
-    subheadline: 'Emerging genetics in an evolving membership.'
-  },
-  { // State 3 - STANDARD OF EXCELLENCE
-    eyebrow: 'STANDARD OF EXCELLENCE',
-    lines: [
-      [{ text: 'The' }, { text: 'SAME', pilled: true }, { text: 'scrutiny and' }],
-      [{ text: 'oversight as an' }, { text: 'EKG', pilled: true }]
-    ],
-    subheadline: '23andMe\'s health reports are sanctioned by the FDA as \'class II medical devices.\' This regulatory framework upholds the accuracy, reliability, and clinical relevance of these reports.'
-  },
-  { // State 4 - BREAKTHROUGH OF THE YEAR
-    eyebrow: 'BREAKTHROUGH OF THE YEAR',
-    lines: [
-      [{ text: 'RIGHT', pilled: true }, { text: 'up there with' }],
-      [{ text: 'landing on a' }, { text: 'COMET', pilled: true }]
-    ],
-    subheadline: 'Human genetic variation was named Science Magazine\'s Breakthrough of the Year in our launch year, specifically calling out 23andMe.'
-  }
-];
+// heroStates removed for logo-only hero
 
 export default function Home() {
   // Individual panel visibility states
@@ -71,7 +27,7 @@ export default function Home() {
   // State previously managed by Leva
   const [heroTheme, setHeroTheme] = useState<'Gradient' | 'White'>('Gradient');
   const [cardState, setCardState] = useState(false); // true = 4 cards, false = 3 cards
-  const [heroStateIndex, setHeroStateIndex] = useState(0);
+  // const [heroStateIndex, setHeroStateIndex] = useState(0);
 
   const toggleSiteController = () => setShowSiteController((prev) => !prev);
   const toggleTypographyController = () => setShowTypographyController((prev) => !prev);
@@ -82,10 +38,11 @@ export default function Home() {
       if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
         event.preventDefault(); // Prevent browser scrolling
         
-        setHeroStateIndex((prev) => {
-          const increment = event.key === 'ArrowRight' ? 1 : -1;
-          return (prev + increment + heroStates.length) % heroStates.length;
-        });
+        // cycling disabled for logo hero
+        // setHeroStateIndex((prev) => {
+        //   const increment = event.key === 'ArrowRight' ? 1 : -1;
+        //   return (prev + increment + heroStates.length) % heroStates.length;
+        // });
       } else if (event.key === '1') {
         event.preventDefault();
         toggleSiteController();
@@ -106,10 +63,7 @@ export default function Home() {
     <>
       <Navigation onLogoClick={toggleSiteController} />
       <EmailBanner />
-      <HeroAnimated 
-        headlineData={heroStates[heroStateIndex]}
-        heroTheme={heroTheme}
-      />
+      <HeroLogoAnimated />
       <KitSection 
         showFourCards={cardState}
       />
