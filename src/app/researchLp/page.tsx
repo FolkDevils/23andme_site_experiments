@@ -53,20 +53,20 @@ export default function ResearchLpPage() {
 						/>
 						<FlexibleCard 
 							aspectRatio="1:1" 
-							videoSrc="/assets/Video_05.mp4" 
+							videoSrc="/assets/video_05.mp4" 
 							headline="It's Not Hormones"
 						headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
 						<FlexibleCard 
 							aspectRatio="1:1" 
-							videoSrc="/assets/Video_09.mp4" 
+							videoSrc="/assets/video_09.mp4" 
 							headline="The Brain's Hidden DJ"
 							headlineVerticalAlignment="bottom"
 						/>
 						<FlexibleCard 
 							aspectRatio="4:5" 
-							videoSrc="/assets/Video_11.mp4" 
+							videoSrc="/assets/video_11.mp4" 
 							headline="Neuro Inheritance"
 							headlineVerticalAlignment="bottom"
 						/>
@@ -76,27 +76,27 @@ export default function ResearchLpPage() {
 					<div className="flex flex-col gap-4">
 						<FlexibleCard 
 							aspectRatio="4:5" 
-							videoSrc="/assets/Video_03.mp4" 
+							videoSrc="/assets/video_03.mp4" 
 							headline="15 Million Reasons Why"
 							headlineVerticalAlignment="bottom"
 						/>
 						<FlexibleCard 
 							aspectRatio="4:5" 
-							videoSrc="/assets/Video_06.mp4" 
+							videoSrc="/assets/video_06.mp4" 
 							headline="The Youniverse"
 								headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
 						<FlexibleCard 
 							aspectRatio="4:5" 
-							videoSrc="/assets/Video_04.mp4" 
+							videoSrc="/assets/video_04.mp4" 
 							headline="Solved Mysteries"
 							headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
 						<FlexibleCard 
 							aspectRatio="1:1" 
-							videoSrc="/assets/Video_08.mp4" 
+							videoSrc="/assets/video_08.mp4" 
 							headline="Rhythm Ain't Random"
 								headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
@@ -119,13 +119,13 @@ export default function ResearchLpPage() {
 						/>
 						<FlexibleCard 
 							aspectRatio="1:1" 
-							videoSrc="/assets/Video_10.mp4" 
+							videoSrc="/assets/video_10.mp4" 
 							headline="Long COVID? Blame DNA"
 							headlineVerticalAlignment="bottom"
 						/>
 						<FlexibleCard 
 							aspectRatio="9:16" 
-							videoSrc="/assets/Video_07.mp4" 
+							videoSrc="/assets/video_07.mp4" 
 							headline="Your DNA, Your Choice"
 							headlineVerticalAlignment="top"
 						/>
