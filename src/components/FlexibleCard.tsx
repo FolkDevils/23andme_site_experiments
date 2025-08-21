@@ -8,7 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger)
 
-type AspectRatio = '1:1' | '4:5' | '16:9' | '9:16'
+type AspectRatio = '1:1' | '4:5' | '16:9' | '9:16' | 'custom-square' | 'custom-landscape'
 type HeadlineVerticalAlignment = 'top' | 'bottom' | 'centered'
 type HeadlineHorizontalAlignment = 'left' | 'centered'
 
@@ -27,7 +27,9 @@ const aspectRatioClasses = {
   '1:1': 'aspect-square',
   '4:5': 'aspect-[4/5]',
   '16:9': 'aspect-video',
-  '9:16': 'aspect-[9/16]'
+  '9:16': 'aspect-[9/16]',
+  'custom-square': 'w-full',
+  'custom-landscape': 'w-full'
 }
 
 export default function FlexibleCard({ 
@@ -58,8 +60,8 @@ export default function FlexibleCard({
     // Set initial states for hover effects
     if (headlineEl) {
       gsap.set(headlineEl, {
-        opacity: 0,
-        y: 20
+        opacity: 1,
+        y: 0
       })
     }
 
@@ -104,7 +106,7 @@ export default function FlexibleCard({
     }
 
     const handleMouseEnter = () => {
-      // Scale up video/image by 25%
+      // Scale up video/image by 15%
       if (videoEl) {
         gsap.to(videoEl, {
           scale: 1.15,
@@ -125,16 +127,6 @@ export default function FlexibleCard({
       if (overlayEl) {
         gsap.to(overlayEl, {
           opacity: 0.5,
-          duration: 0.6,
-          ease: 'power2.out'
-        })
-      }
-
-      // Show headline
-      if (headlineEl) {
-        gsap.to(headlineEl, {
-          opacity: 1,
-          y: 0,
           duration: 0.6,
           ease: 'power2.out'
         })
@@ -167,16 +159,6 @@ export default function FlexibleCard({
           ease: 'power2.in'
         })
       }
-
-      // Hide headline
-      if (headlineEl) {
-        gsap.to(headlineEl, {
-          opacity: 0,
-          y: 20,
-          duration: 0.4,
-          ease: 'power2.in'
-        })
-      }
     }
 
     cardEl.addEventListener('mouseenter', handleMouseEnter)
@@ -198,6 +180,13 @@ export default function FlexibleCard({
     <div 
       ref={cardRef}
       className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative cursor-pointer ${aspectRatioClasses[aspectRatio]} ${className}`}
+      style={
+        aspectRatio === 'custom-square' 
+          ? { height: 'calc(100vw / 3 - 32px - 90px)' }
+          : aspectRatio === 'custom-landscape'
+          ? { height: 'calc((100vw - 80px) / 16 * 9 - 300px)' }
+          : {}
+      }
     >
       {videoSrc ? (
         <video
@@ -243,12 +232,14 @@ export default function FlexibleCard({
         >
           <h3 
             ref={headlineRef}
-            className={`font-million text-[40px] text-white leading-tight ${
+            className={`font-million text-[64px] text-white leading-tight ${
               headlineHorizontalAlignment === 'centered' ? 'text-center w-full' : 'text-left'
             }`}
             style={{ 
               fontFamily: 'Million Serif MM, serif',
-              lineHeight: '1.1'
+              lineHeight: '1.1',
+              textShadow: '0 0px 50px rgba(0, 0, 0, 1)',
+              WebkitTextStroke: '.8pt white'
             }}
           >
             {headline}

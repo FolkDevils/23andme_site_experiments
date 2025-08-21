@@ -48,16 +48,18 @@ export default function ResearchLpPage() {
 							aspectRatio="9:16" 
 							videoSrc="/assets/Video_02.mp4" 
 							headline="The Empathy Gene"
-							headlineVerticalAlignment="centered"
-							headlineHorizontalAlignment="centered"
+							headlineVerticalAlignment="top"
+						
 						/>
-						<FlexibleCard 
-							aspectRatio="1:1" 
-							videoSrc="/assets/video_05.mp4" 
-							headline="It's Not Hormones"
-						headlineVerticalAlignment="centered"
-							headlineHorizontalAlignment="centered"
+
+                        	<FlexibleCard 
+							aspectRatio="16:9" 
+							imageSrc="/assets/img01.png" 
+							headline=""
+							headlineVerticalAlignment="top"
+						
 						/>
+						
 						<FlexibleCard 
 							aspectRatio="1:1" 
 							videoSrc="/assets/video_09.mp4" 
@@ -70,6 +72,25 @@ export default function ResearchLpPage() {
 							headline="Neuro Inheritance"
 							headlineVerticalAlignment="bottom"
 						/>
+
+
+<FlexibleCard 
+							aspectRatio="16:9" 
+							imageSrc="/assets/img03.png" 
+							headline=""
+							headlineVerticalAlignment="top"
+						
+						/>
+
+						<FlexibleCard 
+							aspectRatio="custom-square" 
+							videoSrc="/assets/video_05.mp4" 
+							headline="It's Not Hormones"
+							headlineVerticalAlignment="bottom"
+					
+						/>
+
+
 					</div>
 					
 					{/* Column 2 */}
@@ -80,13 +101,21 @@ export default function ResearchLpPage() {
 							headline="15 Million Reasons Why"
 							headlineVerticalAlignment="bottom"
 						/>
+                                    <FlexibleCard 
+							aspectRatio="16:9" 
+							imageSrc="/assets/img04.png" 
+							headline=""
+							headlineVerticalAlignment="top"
+						
+						/>
 						<FlexibleCard 
-							aspectRatio="4:5" 
+							aspectRatio="9:16" 
 							videoSrc="/assets/video_06.mp4" 
 							headline="The Youniverse"
 								headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
+                   
 						<FlexibleCard 
 							aspectRatio="4:5" 
 							videoSrc="/assets/video_04.mp4" 
@@ -94,45 +123,71 @@ export default function ResearchLpPage() {
 							headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
+            
 						<FlexibleCard 
-							aspectRatio="1:1" 
-							videoSrc="/assets/video_08.mp4" 
+							aspectRatio="4:5" 
+							videoSrc="/assets/video_10.mp4" 
 							headline="Rhythm Ain't Random"
 								headlineVerticalAlignment="centered"
 							headlineHorizontalAlignment="centered"
 						/>
+
+
 					</div>
 					
 					{/* Column 3 */}
 					<div className="flex flex-col gap-4">
+
+                
+                    <FlexibleCard 
+							aspectRatio="9:16" 
+							videoSrc="/assets/video_07.mp4" 
+							headline="Your DNA, Your Choice"
+							headlineVerticalAlignment="top"
+						/>
+
+
 						<FlexibleCard 
 							aspectRatio="4:5" 
 							videoSrc="/assets/Video_01.mp4" 
 							headline="Sound, Fury & Stutter"
 							headlineVerticalAlignment="bottom"
 						/>
+                   
 						<FlexibleCard 
 							aspectRatio="4:5" 
 							videoSrc="/assets/video_12.mp4" 
 							headline="Diversity and DNA"
 							headlineVerticalAlignment="top"
 						/>
+                        <FlexibleCard 
+							aspectRatio="16:9" 
+							imageSrc="/assets/img06.png" 
+							headline=""
+							headlineVerticalAlignment="top"
+						
+						/>
 						<FlexibleCard 
-							aspectRatio="1:1" 
-							videoSrc="/assets/video_10.mp4" 
+							aspectRatio="4:5" 
+							videoSrc="/assets/video_08.mp4" 
 							headline="Long COVID? Blame DNA"
 							headlineVerticalAlignment="bottom"
 						/>
-						<FlexibleCard 
-							aspectRatio="9:16" 
-							videoSrc="/assets/video_07.mp4" 
-							headline="Your DNA, Your Choice"
-							headlineVerticalAlignment="top"
-						/>
-					</div>
+                   
+				
+										</div>
+				</div>
+				
+				{/* Full-width card spanning all three columns */}
+				<div className="mt-4">
+					<FlexibleCard 
+						aspectRatio="custom-landscape" 
+						imageSrc="/assets/map.png" 
+						headline=""
+					/>
 				</div>
 			</div>
-			</div>
-		</>
-	)
+		</div>
+	</>
+  )
 }

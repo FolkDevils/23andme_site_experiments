@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import Button from './Button'
+import Link from 'next/link'
 import gsap from 'gsap'
 
 export default function HeroLogoAnimated() {
@@ -91,14 +92,21 @@ export default function HeroLogoAnimated() {
 					{/* Heading */}
 					<h2 className="font-rialta font-light text-heading-1 text-white text-center tracking-tight -mt-8">23andMe Research Institute</h2>
 
+					{/* Body copy */}
+					<p className="font-rialta font-light text-white text-center -mt-6" style={{ fontSize: '18px', lineHeight: '1.4' }}>
+						Built for impact, not profit.
+					</p>
+
 					{/* Call to action button */}
-					<Button
-						variant="outline"
-						size="medium"
-						className="border-white text-white hover:!bg-white hover:!text-black hover:!border-white"
-					>
-						Learn more
-					</Button>
+					<Link href="/researchLp">
+						<Button
+							variant="outline"
+							size="medium"
+							className="border-white text-white hover:!bg-white hover:!text-black hover:!border-white"
+						>
+							Learn more
+						</Button>
+					</Link>
 				</div>
 			</div>
 
