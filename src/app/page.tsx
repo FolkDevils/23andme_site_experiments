@@ -74,7 +74,7 @@ export default function Home() {
         tabs={["Advanced Health", "Advanced Ancestry", "Pharmacogenetics"]}
         quoteCaption="Eventually the fear and the sadness gave way to hope."
         storyLink="Watch Kristin's story"
-        backgroundVideo="/services/Service-Slide-LG.mp4"
+        backgroundVideo="/services/23andMe_Kristin.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_01.png"
         buttonColor="#D12F11"
         arrowColor="#D12F11"
@@ -89,7 +89,7 @@ export default function Home() {
         tabs={["Health predispositions", "Wellness", "Carrier status"]}
         quoteCaption="It never would've occurred to me. It just wasn't a part of our world."
         storyLink="Watch Hilary's story"
-        backgroundVideo="/services/Service-Slide-LG_02.mp4"
+        backgroundVideo="/services/23andMe_Hilary.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_02.png"
         buttonColor="#D50F67"
         arrowColor="#D50F67"
@@ -120,7 +120,7 @@ export default function Home() {
         tabs={["Ancestry Composition", "DNA Relatives", "Ancestry Timeline"]}
         quoteCaption="I always wanted to know who are my ancestors? Who are the people that made me, me?"
         storyLink="Watch Jordan's story"
-        backgroundVideo="/services/Service-Slide-LG_03.mp4"
+        backgroundVideo="/services/23andMe_Jordan.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_03.png"
         buttonColor="#0081A5"
         arrowColor="#0081A5"
