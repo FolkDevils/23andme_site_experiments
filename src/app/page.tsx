@@ -72,7 +72,7 @@ export default function Home() {
         title="Connect the dots between past, present, and future you."
         description="Best in class genotyping experience combines the most comprehensive ancestry breakdown with hundreds of health reports and insights. Plus ongoing information based on your DNA as the science becomes available."
         tabs={["Advanced Health", "Advanced Ancestry", "Pharmacogenetics"]}
-        quoteCaption="Eventually the fear and the sadness gave way to hope."
+        quoteCaption="Finding out this early has probably added years to my life."
         storyLink="Watch Kristin's story"
         backgroundVideo="/services/23andMe_Kristin.mp4"
         mobileBackgroundImage="/services/Service-Slide-Sm_01.png"
