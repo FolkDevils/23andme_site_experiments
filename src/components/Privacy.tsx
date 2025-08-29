@@ -12,9 +12,9 @@ interface PrivacyProps {
 }
 
 export default function Privacy({
-  title = "Privacy and Security by design.",
-  description = "There is no advanced science that comes before your privacy. That's why, since day one, we've committed ourselves to protecting your privacy. And if you change your mind, you can opt out at any time, now or in the future. Read more about our protocol to keep your data private, in any scenario.",
-  buttonText = "Learn more",
+  title = "Privacy by design.",
+  description = "There is no advanced science that comes before your protection. Read more about our enhanced measures designed to keep your data safe, in any scenario.",
+  buttonText = "Privacy protocol",
   backgroundImage = "/privacy/Privacy.png",
   backgroundVideo
 }: PrivacyProps) {

@@ -4,7 +4,7 @@ import Navigation from '@/components/Navigation';
 import EmailBanner from '@/components/EmailBanner';
 
 import HeroLogoAnimated from '@/components/HeroLogoAnimated';
-import KitSection from '@/components/KitSection';
+import KitSection from '@/components/KitSection_css';
 import ServiceCarousel from '@/components/ServiceCarousel';
 import TotalHealth from '@/components/TotalHealth';
 import Privacy from '@/components/Privacy';
@@ -145,7 +145,7 @@ export default function Home() {
         ]}
       />
 
-      <TotalHealth backgroundVideo="/totalhealth/TH_Desktop.mp4" />
+      <TotalHealth backgroundVideo="/totalhealth/total_health.mp4" />
 
       <Privacy backgroundVideo="/privacy/Privacy.mp4" />
 
