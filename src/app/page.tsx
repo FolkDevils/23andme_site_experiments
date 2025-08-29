@@ -26,7 +26,7 @@ export default function Home() {
   
   // State previously managed by Leva
   const [heroTheme, setHeroTheme] = useState<'Gradient' | 'White'>('Gradient');
-  const [cardState, setCardState] = useState(false); // true = 4 cards, false = 3 cards
+  const [cardState, setCardState] = useState(true); // true = 4 cards, false = 3 cards
   // const [heroStateIndex, setHeroStateIndex] = useState(0);
 
   const toggleSiteController = () => setShowSiteController((prev) => !prev);
